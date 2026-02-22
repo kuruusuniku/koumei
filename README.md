@@ -71,8 +71,8 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 
 ```bash
 # .agents（ワークスペース）と .claude/skills（スキル定義）の両方をコピー
-cp -r /Users/suke/PhpstormProjects/agents/templates/.agents /path/to/your/project/.agents
-cp -r /Users/suke/PhpstormProjects/agents/templates/.claude /path/to/your/project/.claude
+cp -r /Users/suke/PhpstormProjects/agents/templates/.agents /path/to/your/project/
+cp -r /Users/suke/PhpstormProjects/agents/templates/.claude /path/to/your/project/
 ```
 
 ### 2. TEAM.md をカスタマイズ
