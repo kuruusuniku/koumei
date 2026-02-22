@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bitbucket PR"
+  short_description: "Bitbucket Cloudで安全にPR作成・運用"
+  default_prompt: "Use $bitbucket-pr to create a Bitbucket PR safely."
