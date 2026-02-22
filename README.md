@@ -5,6 +5,8 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 ## 概要
 
 諸葛孔明（最高指揮者）を頂点に、分析・UX設計・技術実装・レビューの4担当がチームとして機能開発を行う体制。
+全ての指示出しは `/koumei-*` スキルコマンドで実行するため、ロールの切り替えは不要。
+設計フェーズでは `/koumei-design` がux-designerとtech-leadを**並列起動**し、効率的に進行する。
 
 ```
         ┌──────────────┐
@@ -15,7 +17,7 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
     ┌──────────┼──────────┐
     │          │          │
 ┌───┴───┐ ┌───┴───┐ ┌───┴───┐
-│analyst│ │  ux-  │ │ tech- │  設計フェーズ（並列）
+│analyst│ │  ux-  │ │ tech- │  /koumei-design で並列実行
 │       │ │designer│ │ lead  │
 └───┬───┘ └───┬───┘ └───┬───┘
     │         │         │
@@ -27,12 +29,50 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
       └───────────────┘
 ```
 
+## Skills（スラッシュコマンド）
+
+スキルコマンドでワークフローの全ステップを実行する。
+
+### メインワークフロー
+
+| コマンド | 担当 | 用途 |
+|---------|------|------|
+| `/koumei-start {要件}` | 孔明 | タスク定義＋各担当への指示書を一括作成 |
+| `/koumei-analyze [タスクID]` | analyst | 既存コード・スキーマの分析を実行 |
+| `/koumei-design [タスクID]` | **ux-designer + tech-lead** | UX設計と技術設計を**並列実行** |
+| `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビューを実行 |
+| `/koumei-implement [フェーズ番号]` | tech-lead | レビュー通過後、実装を開始 |
+| `/koumei-status` | 孔明 | タスク進捗の確認・次アクション提案 |
+
+### 個別実行（差し戻し時の再実行用）
+
+| コマンド | 担当 | 用途 |
+|---------|------|------|
+| `/koumei-design-ux [タスクID]` | ux-designer | UX設計のみ単独実行 |
+| `/koumei-design-tech [タスクID]` | tech-lead | 技術設計のみ単独実行 |
+
+### 典型的な使い方
+
+```
+/koumei-start テンプレートメモ帳機能    ← タスク定義＋指示書作成
+/koumei-analyze                        ← 既存コード分析
+/koumei-design                         ← UX設計 + 技術設計（並列実行）
+/koumei-review                         ← レビュー実行
+/koumei-implement                      ← 実装開始
+/koumei-review                         ← コードレビュー
+/koumei-status                         ← 最終進捗確認
+
+※ 迷ったら /koumei-status で次のアクションを確認
+```
+
 ## プロジェクトへの展開手順
 
 ### 1. テンプレートをコピー
 
 ```bash
+# .agents（ワークスペース）と .claude/skills（スキル定義）の両方をコピー
 cp -r /Users/suke/PhpstormProjects/agents/templates/.agents /path/to/your/project/.agents
+cp -r /Users/suke/PhpstormProjects/agents/templates/.claude /path/to/your/project/.claude
 ```
 
 ### 2. TEAM.md をカスタマイズ
@@ -58,122 +98,74 @@ cp -r /Users/suke/PhpstormProjects/agents/templates/.agents /path/to/your/projec
 
 各ファイルに `{{PROJECT_PATH}}` 等のプレースホルダーがあるので、実際のパスに置換する。
 
-### 4. 最初のタスクを定義
+### 4. スキルで開始
 
-```bash
-vi .agents/koumei/tasks/task-001.md
+```
+/koumei-start テンプレートメモ帳機能
 ```
 
-以下を記載:
-- タスク概要
-- 要件定義書へのリンク
-- 影響範囲（ファイル・コレクション）
-- 実装フェーズ
-- 各担当への指示概要
+タスク定義と全担当への指示書が自動生成される。以降は各スキルの完了時に次のステップが案内される。
 
-### 5. 設計フェーズ開始
-
-孔明として各担当に指示書を配置:
-
-```bash
-# 例: analystへの指示
-vi .agents/analyst/instructions/task-001-instruction.md
-```
-
-## ワークフロー詳細
+## ワークフロー（スキル駆動）
 
 ```
 【設計フェーズ】
-1. 孔明がタスクを定義        → .agents/koumei/tasks/
-2. 孔明が各担当に指示書を配置 → .agents/{担当}/instructions/
-3. analyst が既存システム分析  → .agents/analyst/deliverables/
-4. ux-designer と tech-lead が並列で設計 → 各 deliverables/
-5. 各担当が完了報告           → .agents/koumei/reports/
-6. 悪魔の代弁者がレビュー     → .agents/devils-advocate/reviews/
-7. 孔明がレビュー結果を確認   → 修正指示 or 承認
+1. /koumei-start {要件}       → タスク定義・指示書を自動生成
+2. /koumei-analyze             → 既存システム分析
+3. /koumei-design              → UX設計 + 技術設計を並列実行
+4. /koumei-review              → 全成果物レビュー
+   → 差し戻し: /koumei-design-ux or /koumei-design-tech で個別再実行 → /koumei-review
 
 【実装フェーズ】
-8. 全ドキュメント承認後       → tech-lead が実装開始
-9. 実装完了                   → ビルド成功を確認
-10. 悪魔の代弁者がコードレビュー → 指摘修正
+5. /koumei-implement           → 実装（レビュー通過後のみ実行可能）
+6. /koumei-review              → コードレビュー
 
 【検証フェーズ】
-11. 開発サーバーでの動作確認（孔明が実施）
-12. 孔明が最終確認            → メインブランチへ PR
+7. /koumei-status              → 最終進捗確認
+8. 動作確認 → メインブランチへ PR
 ```
 
 ## ディレクトリ構造
 
 ```
-.agents/
-├── TEAM.md                          # チーム構成・ワークフロー・規約
-├── koumei/
-│   ├── CLAUDE.md                    # 最高指揮者の役割定義
-│   ├── tasks/                       # タスク定義
-│   │   └── task-001.md
-│   └── reports/                     # 各担当からの完了報告
-│       └── task-001-analyst-report.md
-├── analyst/
-│   ├── CLAUDE.md                    # 分析担当の役割定義
-│   ├── instructions/                # 孔明からの指示書
-│   │   └── task-001-instruction.md
-│   └── deliverables/                # 分析成果物
-│       └── task-001-analysis.md
-├── ux-designer/
-│   ├── CLAUDE.md
-│   ├── instructions/
-│   └── deliverables/
-├── tech-lead/
-│   ├── CLAUDE.md
-│   ├── instructions/
-│   └── deliverables/
-└── devils-advocate/
-    ├── CLAUDE.md
-    ├── instructions/
-    └── reviews/                     # レビュー結果
-        └── task-001-review.md
-```
-
-## Skills（スラッシュコマンド）
-
-孔明チームの各フェーズをスラッシュコマンドで実行できるSkillsを提供。
-`~/.claude/skills/` に配置済み（全プロジェクト共通で使用可能）。
-
-### コマンド一覧
-
-| コマンド | 担当 | 用途 |
-|---------|------|------|
-| `/koumei-start` | 孔明 | タスク定義＋各担当への指示書を一括作成 |
-| `/koumei-analyze` | analyst | 既存コード・スキーマの分析を実行 |
-| `/koumei-design-ux` | ux-designer | UI/UX設計を実行 |
-| `/koumei-design-tech` | tech-lead | 技術設計書を作成 |
-| `/koumei-review` | devils-advocate | 全成果物のレビューを実行 |
-| `/koumei-implement` | tech-lead | レビュー通過後、実装を開始 |
-| `/koumei-status` | 孔明 | タスク進捗の確認・次アクション提案 |
-
-### 典型的な使い方
-
-```
-/koumei-start テンプレートメモ帳機能    ← タスク定義＋指示書作成
-/koumei-analyze task-001               ← 既存コード分析
-/koumei-design-ux task-001             ← UX設計
-/koumei-design-tech task-001           ← 技術設計
-/koumei-review task-001                ← レビュー実行
-/koumei-implement task-001             ← 実装開始
-/koumei-status                         ← 進捗確認
-```
-
-### Skills ファイルの配置先
-
-```
-~/.claude/skills/
-├── koumei-start/SKILL.md
-├── koumei-analyze/SKILL.md
-├── koumei-design-ux/SKILL.md
-├── koumei-design-tech/SKILL.md
-├── koumei-review/SKILL.md
-├── koumei-implement/SKILL.md
-└── koumei-status/SKILL.md
+your-project/
+├── .claude/
+│   └── skills/                         # スキル定義（プロジェクト固有）
+│       ├── koumei-start/SKILL.md
+│       ├── koumei-analyze/SKILL.md
+│       ├── koumei-design/SKILL.md      # オーケストレーター（並列実行）
+│       ├── koumei-design-ux/SKILL.md   # 個別実行用
+│       ├── koumei-design-tech/SKILL.md # 個別実行用
+│       ├── koumei-review/SKILL.md
+│       ├── koumei-implement/SKILL.md
+│       └── koumei-status/SKILL.md
+├── .agents/
+│   ├── TEAM.md                          # チーム構成・スキルコマンド一覧・規約
+│   ├── koumei/
+│   │   ├── CLAUDE.md                    # 最高指揮者の役割定義
+│   │   ├── tasks/                       # タスク定義
+│   │   │   └── task-001.md
+│   │   └── reports/                     # 各担当からの完了報告
+│   │       └── task-001-analyst-report.md
+│   ├── analyst/
+│   │   ├── CLAUDE.md                    # 分析担当の役割定義
+│   │   ├── instructions/                # 孔明からの指示書
+│   │   │   └── task-001-instruction.md
+│   │   └── deliverables/                # 分析成果物
+│   │       └── task-001-analysis.md
+│   ├── ux-designer/
+│   │   ├── CLAUDE.md
+│   │   ├── instructions/
+│   │   └── deliverables/
+│   ├── tech-lead/
+│   │   ├── CLAUDE.md
+│   │   ├── instructions/
+│   │   └── deliverables/
+│   └── devils-advocate/
+│       ├── CLAUDE.md
+│       ├── instructions/
+│       └── reviews/                     # レビュー結果
+│           └── task-001-review.md
 ```
 
 ## 適用実績

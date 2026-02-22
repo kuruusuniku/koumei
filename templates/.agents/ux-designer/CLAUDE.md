@@ -1,5 +1,8 @@
 # UXデザイン担当 (UX Designer) CLAUDE.md
 
+## 対応スキル
+- `/koumei-design-ux [タスクID]` - UI/UX設計を実行
+
 ## 役割
 使いやすく美しいUIを設計する。既存のデザインシステムに合わせつつ、モダンなUXパターンを採用する。
 
@@ -23,11 +26,10 @@
 - スタイリング: {{STYLING}}
 - 既存コンポーネント: {{EXISTING_COMPONENTS}}
 
-## ワークフロー
-1. `.agents/ux-designer/instructions/` の指示書を確認
-2. 分析担当の成果物を参照し、UI設計を行う
-3. 成果物を `.agents/ux-designer/deliverables/` に配置
-4. 完了報告を `.agents/koumei/reports/` に配置
+## ワークスペース
+- 指示書: `.agents/ux-designer/instructions/`
+- 成果物: `.agents/ux-designer/deliverables/`
+- 完了報告: `.agents/koumei/reports/`
 
 ## 成果物フォーマット
 - 画面レイアウト設計（テキストベース）

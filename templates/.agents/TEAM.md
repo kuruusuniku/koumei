@@ -2,6 +2,26 @@
 
 ## プロジェクト: {{PROJECT_NAME}}
 
+### スキルコマンド一覧
+
+全ての指示出しはスキルコマンドで実行する。ロールの切り替えは不要。
+
+| コマンド | 役割 | 説明 |
+|---------|------|------|
+| `/koumei-start {要件}` | 諸葛孔明 | タスク定義・全担当への指示書作成 |
+| `/koumei-analyze [タスクID]` | analyst | 既存コードベースの分析 |
+| `/koumei-design [タスクID]` | **ux-designer + tech-lead** | UX設計と技術設計を**並列実行** |
+| `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー |
+| `/koumei-implement [フェーズ番号]` | tech-lead | 実装（レビュー通過後） |
+| `/koumei-status` | 諸葛孔明 | 進捗確認・次のアクション提案 |
+
+個別実行（差し戻し時の再実行用）:
+
+| コマンド | 役割 | 説明 |
+|---------|------|------|
+| `/koumei-design-ux [タスクID]` | ux-designer | UX設計のみ単独実行 |
+| `/koumei-design-tech [タスクID]` | tech-lead | 技術設計のみ単独実行 |
+
 ### チーム構成
 
 | 役割 | コードネーム | ワークスペース | 責務 | モデル |
@@ -12,26 +32,25 @@
 | **技術アーキテクチャ&実装担当** | tech-lead | `.agents/tech-lead/` | 技術設計・実装 | **opus** |
 | **悪魔の代弁者** | devils-advocate | `.agents/devils-advocate/` | 全成果物のレビュー・問題提起 | **opus** |
 
-### ワークフロー
+### ワークフロー（スキル駆動）
 
 ```
 【設計フェーズ】
-1. 孔明がタスクを定義 → .agents/koumei/tasks/
-2. 孔明が各担当に指示書を配置 → .agents/{担当}/instructions/
-3. analyst が既存システム分析 → .agents/analyst/deliverables/
-4. ux-designer と tech-lead が並列で設計 → 各 deliverables/
-5. 各担当が完了報告 → .agents/koumei/reports/
-6. 悪魔の代弁者がレビュー → .agents/devils-advocate/reviews/
-7. 孔明がレビュー結果を確認 → 修正指示 or 承認
+1. /koumei-start {要件}       → タスク定義・指示書を自動生成
+2. /koumei-analyze             → 既存システム分析
+3. /koumei-design              → UX設計 + 技術設計を並列実行
+4. /koumei-review              → 全成果物レビュー
+   → 差し戻し: /koumei-design-ux or /koumei-design-tech で個別再実行 → /koumei-review
 
 【実装フェーズ】
-8. 全ドキュメント承認後 → tech-lead が実装開始
-9. 実装完了 → ビルド成功を確認
-10. 悪魔の代弁者がコードレビュー → 指摘修正
+5. /koumei-implement           → 実装（レビュー通過後のみ実行可能）
+6. /koumei-review              → コードレビュー
 
 【検証フェーズ】
-11. 開発サーバーでの動作確認（孔明が実施）
-12. 孔明が最終確認 → メインブランチへ PR
+7. /koumei-status              → 最終進捗確認
+8. 動作確認 → メインブランチへ PR
+
+※ 迷ったら /koumei-status で次のアクションを確認
 ```
 
 ### 対象プロジェクト

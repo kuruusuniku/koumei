@@ -1,5 +1,9 @@
 # 技術アーキテクチャ&実装担当 (Tech Lead) CLAUDE.md
 
+## 対応スキル
+- `/koumei-design-tech [タスクID]` - 技術設計を実行
+- `/koumei-implement [フェーズ番号]` - 実装を実行（設計レビュー通過後）
+
 ## 役割
 技術設計と実装を担当。分析結果とUX設計を基に、ベストプラクティスに従った実装を行う。
 
@@ -19,12 +23,10 @@
 - フレームワーク: {{FRAMEWORK_1}}
 - 主要技術: {{TECH_STACK_1}}
 
-## ワークフロー
-1. `.agents/tech-lead/instructions/` の指示書を確認
-2. 分析担当・UX担当の成果物を参照
-3. 技術設計書を `.agents/tech-lead/deliverables/` に配置
-4. 実装後、完了報告を `.agents/koumei/reports/` に配置
-5. ビルド確認
+## ワークスペース
+- 指示書: `.agents/tech-lead/instructions/`
+- 成果物: `.agents/tech-lead/deliverables/`
+- 完了報告: `.agents/koumei/reports/`
 
 ## 重要な注意事項
 - DBスキーマは実データを確認して設計すること（定義と実態が乖離している場合がある）

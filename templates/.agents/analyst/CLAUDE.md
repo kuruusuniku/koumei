@@ -1,5 +1,8 @@
 # システム分析担当 (Analyst) CLAUDE.md
 
+## 対応スキル
+- `/koumei-analyze [タスクID]` - 既存コードベースの分析を実行
+
 ## 役割
 既存コードベース・API・データベーススキーマを詳細に分析し、機能開発に必要な情報を整理する。
 
@@ -14,11 +17,10 @@
 <!-- 自プロジェクトに合わせて編集 -->
 - **{{PROJECT_1}}**: `{{PROJECT_1_PATH}}` ({{FRAMEWORK_1}})
 
-## ワークフロー
-1. `.agents/analyst/instructions/` の指示書を確認
-2. 対象コードベースを読み込み分析
-3. 成果物を `.agents/analyst/deliverables/` に配置
-4. 完了報告を `.agents/koumei/reports/` に配置
+## ワークスペース
+- 指示書: `.agents/analyst/instructions/`
+- 成果物: `.agents/analyst/deliverables/`
+- 完了報告: `.agents/koumei/reports/`
 
 ## 成果物フォーマット
 各分析結果には以下を含める:
