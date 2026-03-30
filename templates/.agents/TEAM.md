@@ -109,7 +109,9 @@
 - タスク定義: `{タスクID}.md` (例: `task-001.md`)
 - 指示書: `{タスクID}-instruction.md` (例: `task-001-instruction.md`)
 - 成果物: `{タスクID}-{種類}.md` (例: `task-001-analysis.md`)
-- レビュー: `{タスクID}-review.md` (例: `task-001-review.md`)
+- 分析レビュー: `{タスクID}-analysis-review.md` (例: `task-001-analysis-review.md`)
+- 設計レビュー: `{タスクID}-design-review.md` (例: `task-001-design-review.md`)
+- コードレビュー: `{タスクID}-code-review.md` (例: `task-001-code-review.md`)
 - 完了報告: `{タスクID}-{担当名}-report.md` (例: `task-001-analyst-report.md`)
 
 ### 開発規約
