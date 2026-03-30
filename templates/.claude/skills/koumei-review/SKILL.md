@@ -47,6 +47,10 @@ description: 成果物またはコードのレビューを実行する。レビ�
 
 ## Workflow
 
+### 0) セキュリティ監査モード判定
+- `$ARGUMENTS` に `security` または `--security` が含まれる場合、セキュリティ監査モードで実行する
+- セキュリティ監査モードでは、通常レビュー（手順2〜4）に加えて「セキュリティ監査」セクションの全チェックを実施する
+
 ### 1) タスクID取得
 - 引数からタスクIDを取得する。未指定の場合はユーザに確認する。
 
@@ -60,6 +64,19 @@ description: 成果物またはコードのレビューを実行する。レビ�
 
 ### 4) レビュー結果保存
 - 命名規則に従ったファイル名で `.agents/devils-advocate/reviews/` に保存する。
+
+### セキュリティ監査モード
+
+`/koumei-review security` または `/koumei-review --security` で実行した場合、
+通常のレビュー観点に加えてOWASP Top 10 + STRIDE の完全チェックを実施する。
+
+セキュリティ監査モードでは、レビュー結果に以下を追加で含める:
+- OWASP Top 10 各項目の評価（✅/⚠️/❌/N/A）
+- STRIDE 脅威分析結果
+- セキュリティスコア（X/10）
+- スコアが 8/10 未満の場合は VERDICT: NEEDS_REVISION を強制
+
+レビュー結果のファイル名: `task-{番号}-security-review.md`
 
 ## Notes
 - レビューフォーマットは `devils-advocate/CLAUDE.md` の「レビューフォーマット」に従う。
