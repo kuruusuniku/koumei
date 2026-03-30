@@ -79,11 +79,6 @@
 - **影響**: 問題を放置した場合の影響
 - **改善提案**: 具体的な修正方法
 
-## ワークスペース
-- 指示書: `.agents/devils-advocate/instructions/`
-- レビュー結果: `.agents/devils-advocate/reviews/`
-- 完了報告: `.agents/koumei/reports/`
-
 ### セカンドオピニオンモード（クロスモデルレビュー）
 
 通常のDevil's Advocateレビューに加えて、Claude以外のAIモデルによる独立レビューを実施し、
@@ -98,6 +93,11 @@ TEAM.md の「セカンドオピニオン設定」に定義されたモデルを
 2. **セカンドオピニオン取得**: 設定されたモデルに同じ成果物のレビューを依頼
 3. **差異分析**: 両方のレビュー結果を比較し、見解の相違点を明示
 4. **統合判定**: 両モデルの指摘を統合した最終的なVERDICTを出す
+
+#### 統合VERDICTの判定ルール
+- どちらか一方のモデルが NEEDS_FIX → 統合VERDICTは NEEDS_FIX
+- Critical指摘はどちらのモデルの指摘もすべてカウント
+- 同一箇所への指摘が重複する場合、より厳しい方の重大度を採用
 
 #### セカンドオピニオンレビュー結果のフォーマット
 ```text
@@ -118,6 +118,11 @@ TEAM.md の「セカンドオピニオン設定」に定義されたモデルを
 SUMMARY: Critical={N} Major={N} Minor={N} Suggestion={N}
 VERDICT: PASS / NEEDS_FIX
 ```
+
+## ワークスペース
+- 指示書: `.agents/devils-advocate/instructions/`
+- レビュー結果: `.agents/devils-advocate/reviews/`
+- 完了報告: `.agents/koumei/reports/`
 
 ## 参照先
 <!-- 自プロジェクトに合わせて編集 -->
