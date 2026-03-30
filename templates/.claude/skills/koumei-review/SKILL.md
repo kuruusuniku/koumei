@@ -61,6 +61,19 @@ description: 成果物またはコードのレビューを実行する。レビ�
 ### 4) レビュー結果保存
 - 命名規則に従ったファイル名で `.agents/devils-advocate/reviews/` に保存する。
 
+### セキュリティ監査モード
+
+`/koumei-review security` または `/koumei-review --security` で実行した場合、
+通常のレビュー観点に加えてOWASP Top 10 + STRIDE の完全チェックを実施する。
+
+セキュリティ監査モードでは、レビュー結果に以下を追加で含める:
+- OWASP Top 10 各項目の評価（✅/⚠️/❌/N/A）
+- STRIDE 脅威分析結果
+- セキュリティスコア（X/10）
+- スコアが 8/10 未満の場合は VERDICT: NEEDS_REVISION を強制
+
+レビュー結果のファイル名: `task-{番号}-security-review.md`
+
 ## Notes
 - レビューフォーマットは `devils-advocate/CLAUDE.md` の「レビューフォーマット」に従う。
 - 各レビューには重大度（Critical / Major / Minor / Suggestion）を明記する。
