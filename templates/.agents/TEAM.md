@@ -8,8 +8,7 @@
 
 | コマンド | 役割 | 説明 |
 |---------|------|------|
-| `/koumei-start {要件}` | 諸葛孔明 | タスク開始（全自動/順次モード選択） |
-| `/koumei-start --manual {要件}` | 諸葛孔明 | タスク開始（順次モード明示指定） |
+| `/koumei-start {要件}` | 諸葛孔明 | タスク定義・全担当への指示書作成 |
 | `/koumei-analyze [タスクID]` | analyst | 既存コードベースの分析 |
 | `/koumei-design [タスクID]` | **ux-designer + tech-lead** | UX設計と技術設計を**並列実行** |
 | `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー |
@@ -36,25 +35,20 @@
 ### ワークフロー（スキル駆動）
 
 ```
-【全自動モード】
-1. /koumei-start {要件}       → モード選択 → タスク定義・指示書を自動生成
-2. (自動) analyze              → 既存システム分析
-3. (自動) review               → 分析レビュー（分析レビュー: task-{番号}-analysis-review.md）
-4. (自動) design               → UX設計 + 技術設計を並列実行
-5. (自動) review               → 設計レビュー（設計レビュー: task-{番号}-design-review.md）
-6. (自動) implement            → 実装
-7. (自動) review               → コードレビュー（コードレビュー: task-{番号}-code-review.md）
-8. (自動) gh pr create         → PR作成
+【設計フェーズ】
+1. /koumei-start {要件}       → タスク定義・指示書を自動生成
+2. /koumei-analyze             → 既存システム分析
+3. /koumei-design              → UX設計 + 技術設計を並列実行
+4. /koumei-review              → 全成果物レビュー
+   → 差し戻し: /koumei-design-ux or /koumei-design-tech で個別再実行 → /koumei-review
 
-【順次モード】
-1. /koumei-start --manual {要件}  → タスク定義・指示書を生成
-2. /koumei-analyze                → 既存システム分析
-3. /koumei-review                 → 分析レビュー
-4. /koumei-design                 → UX設計 + 技術設計を並列実行
-5. /koumei-review                 → 設計レビュー
-6. /koumei-implement              → 実装
-7. /koumei-review                 → コードレビュー
-8. /koumei-status                 → 最終進捗確認 → PR
+【実装フェーズ】
+5. /koumei-implement           → 実装（レビュー通過後のみ実行可能）
+6. /koumei-review              → コードレビュー
+
+【検証フェーズ】
+7. /koumei-status              → 最終進捗確認
+8. 動作確認 → メインブランチへ PR
 
 ※ 迷ったら /koumei-status で次のアクションを確認
 ```
@@ -82,9 +76,6 @@
 - 指示書: `{タスクID}-instruction.md` (例: `task-001-instruction.md`)
 - 成果物: `{タスクID}-{種類}.md` (例: `task-001-analysis.md`)
 - レビュー: `{タスクID}-review.md` (例: `task-001-review.md`)
-- レビュー（分析）: `{タスクID}-analysis-review.md` (例: `task-001-analysis-review.md`)
-- レビュー（設計）: `{タスクID}-design-review.md` (例: `task-001-design-review.md`)
-- レビュー（コード）: `{タスクID}-code-review.md` (例: `task-001-code-review.md`)
 - 完了報告: `{タスクID}-{担当名}-report.md` (例: `task-001-analyst-report.md`)
 
 ### 開発規約
