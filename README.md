@@ -135,6 +135,30 @@ cp -r templates/.claude /path/to/your/project/
 1. `.agents/{ロール名}/CLAUDE.md` を作成
 2. `TEAM.md` のチーム構成テーブルにロールを追記
 
+### モデル委譲（Claudeトークン節約）
+
+サブエージェントの一部をCodex等の外部モデルに委譲し、Claudeトークンを節約できる。
+
+有効化: `TEAM.md` 内のモデル委譲設定テーブルのコメントを外す。
+
+```markdown
+| 役割 | 委譲先 | 呼び出し方法 | 対象フェーズ |
+|------|--------|------------|------------|
+| analyst | codex | `codex -q "{プロンプト}"` | 分析（/koumei-analyze） |
+| tech-lead | codex | `codex -q "{プロンプト}"` | 実装（/koumei-implement） |
+```
+
+**委譲推奨:**
+- **analyst** — コード分析はCodexの得意領域。読み取り中心で品質リスク低
+- **tech-lead（実装）** — コーディング能力が高い。opus→Codexで大幅節約
+
+**Claude維持推奨:**
+- **koumei** — オーケストレーター（Claude Agent API必須）
+- **ux-designer** — 創造的UX判断が多い
+- **devils-advocate** — 品質ゲートは信頼性重視
+
+委譲先で実装したコードも、次の `/koumei-review` で必ずClaude（devils-advocate）がレビューするため品質は担保される。
+
 ### セカンドオピニオン（クロスモデルレビュー）
 
 Devil's Advocateレビュー時に、Claude以外のモデル（Codex, Gemini等）によるセカンドオピニオンを取得可能。

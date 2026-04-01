@@ -20,8 +20,11 @@ Thumbs.db
 .claude/agent-memory/
 .claude/worktrees/
 
-# Orchestration state
-.agents/
+# Orchestration state (root only, not templates/)
+/.agents/
+
+# Company (local working state)
+/company/
 
 # Python
 __pycache__/

@@ -16,6 +16,24 @@ allowed-tools: Read, Glob, Grep, Write, Bash, Edit
 /koumei-start → ▶ /koumei-analyze → /koumei-design → /koumei-review → /koumei-implement
 ```
 
+## モデル委譲チェック
+
+`.agents/TEAM.md` の「モデル委譲設定」テーブル（コメント外されたもの）を確認する。
+`analyst` が委譲先として設定されている場合:
+
+1. 指示書（`.agents/analyst/instructions/` の最新）と役割定義（`.agents/analyst/CLAUDE.md`）を読み込む
+2. 以下の内容を含むプロンプトを組み立てる:
+   - 役割定義の全文
+   - 指示書の全文
+   - 「成果物を `.agents/analyst/deliverables/task-{番号}-analysis.md` に保存すること」
+   - 「完了報告を `.agents/koumei/reports/task-{番号}-analyst-report.md` に保存すること」
+   - 以下「手順」セクションの 3〜6 の内容
+3. Bash ツールで委譲先を実行する: `codex -q "{プロンプト}"`
+4. 実行完了後、成果物ファイルの存在を確認し、結果をユーザーに報告する
+5. 次のステップを案内して終了する
+
+委譲設定がない場合は、以下の通常手順で実行する。
+
 ## 手順
 
 ### 1. 役割の確認

@@ -149,12 +149,29 @@ TEAM.md の「チーム構成」テーブルに以下の標準5ロール以外�
 
 ### Phase 1: 分析実行
 
+#### モデル委譲チェック
+`.agents/TEAM.md` の「モデル委譲設定」テーブルを確認する。
+`analyst` が委譲先として設定されている場合 → **Codex委譲モード**で実行する。
+設定がない場合 → **通常モード**（Claudeサブエージェント）で実行する。
+
+#### 通常モード
 Agent tool で `subagent_type: general-purpose` のサブエージェントを起動する。
 
 **プロンプトに含める内容:**
 - `.agents/analyst/CLAUDE.md` の役割定義
 - `.claude/skills/koumei-analyze/SKILL.md` の手順セクションの内容
 - 対象タスク番号と指示書のパス
+
+#### Codex委譲モード
+Bash tool で `codex -q` を実行する。
+
+**プロンプトに含める内容（通常モードと同一）:**
+- `.agents/analyst/CLAUDE.md` の役割定義
+- `.claude/skills/koumei-analyze/SKILL.md` の手順セクションの内容
+- 対象タスク番号と指示書のパス
+- 成果物・完了報告の保存先パス
+
+**実行後:** 成果物ファイルの存在を確認する。ファイルが生成されていない場合はエラーとして報告する。
 
 **完了後の報告（孔明口調）:**
 ```
@@ -231,12 +248,30 @@ Phase 2 と同様に devils-advocate サブエージェントを起動する。
 
 ### Phase 5: 実装
 
+#### モデル委譲チェック
+`.agents/TEAM.md` の「モデル委譲設定」テーブルを確認する。
+`tech-lead` が `実装（/koumei-implement）` の委譲先として設定されている場合 → **Codex委譲モード**で実行する。
+設定がない場合 → **通常モード**（Claudeサブエージェント）で実行する。
+
+#### 通常モード
 Agent tool で tech-lead サブエージェントを起動する。
 
 **プロンプトに含める内容:**
 - `.agents/tech-lead/CLAUDE.md` の役割定義
 - `.claude/skills/koumei-implement/SKILL.md` の手順セクションの内容
 - 対象タスク番号と指示書のパス
+
+#### Codex委譲モード
+Bash tool で `codex -q` を実行する。
+
+**プロンプトに含める内容:**
+- `.agents/tech-lead/CLAUDE.md` の役割定義
+- 全成果物の内容（分析・UX設計・技術設計・レビュー結果）
+- `.claude/skills/koumei-implement/SKILL.md` の手順セクションの内容
+- 対象タスク番号と指示書のパス
+- 完了報告の保存先パス
+
+**実行後:** ビルド確認を行い、失敗した場合はエラーとして報告する。
 
 **開始時の報告（孔明口調）:**
 ```

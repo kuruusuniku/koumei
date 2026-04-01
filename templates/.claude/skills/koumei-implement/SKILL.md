@@ -16,6 +16,32 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash
 /koumei-review（承認）→ ▶ /koumei-implement → /koumei-review（コードレビュー）→ /koumei-status
 ```
 
+## モデル委譲チェック
+
+`.agents/TEAM.md` の「モデル委譲設定」テーブル（コメント外されたもの）を確認する。
+`tech-lead` が `実装（/koumei-implement）` の委譲先として設定されている場合:
+
+1. 以下の全成果物を読み込む:
+   - `.agents/analyst/deliverables/` の分析結果
+   - `.agents/ux-designer/deliverables/` のUX設計
+   - `.agents/tech-lead/deliverables/` の技術設計
+   - `.agents/devils-advocate/reviews/` のレビュー結果
+   - `.agents/koumei/tasks/` のタスク定義
+   - `.agents/tech-lead/CLAUDE.md` の役割定義
+2. 以下の内容を含むプロンプトを組み立てる:
+   - 役割定義の全文
+   - 全成果物の内容（分析・設計・レビュー結果）
+   - 「以下の前提確認〜実装手順に従って実装すること」
+   - 以下「前提確認」「実装手順」セクションの内容
+   - 「完了報告を `.agents/koumei/reports/task-{番号}-tech-lead-implement-report.md` に保存すること」
+3. Bash ツールで委譲先を実行する: `codex -q "{プロンプト}"`
+4. 実行完了後、ビルド確認を行い、結果をユーザーに報告する
+5. 次のステップを案内して終了する
+
+**注意**: 委譲先モデルの実装後も、次の `/koumei-review`（コードレビュー）は必ずClaude（devils-advocate）が実行する。
+
+委譲設定がない場合は、以下の通常手順で実行する。
+
 ## 前提確認
 
 ### 1. レビュー通過の確認
