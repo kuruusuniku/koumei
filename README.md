@@ -1,12 +1,11 @@
-# 諸葛孔明エージェントチーム - 汎用テンプレート
+# Koumei - Claude Code マルチエージェント開発テンプレート
 
 Claude Codeのマルチエージェント開発体制を、任意のプロジェクトに展開するためのテンプレート集。
 
 ## 概要
 
-諸葛孔明（最高指揮者）を頂点に、分析・UX設計・技術実装・レビューの4担当がチームとして機能開発を行う体制。
+諸葛孔明（最高指揮者）を頂点に、分析・UX設計・技術実装・レビューの4担当がチームとして機能開発を行う。
 全ての指示出しは `/koumei-*` スキルコマンドで実行するため、ロールの切り替えは不要。
-設計フェーズでは `/koumei-design` がux-designerとtech-leadを**並列起動**し、効率的に進行する。
 
 ```
         ┌──────────────┐
@@ -29,84 +28,51 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
       └───────────────┘
 ```
 
-## Skills（スラッシュコマンド）
+### チーム構成
 
-スキルコマンドでワークフローの全ステップを実行する。
+| 役割 | コードネーム | 責務 | モデル |
+|------|------------|------|--------|
+| 最高指揮者 | koumei | 全体統括、タスク分割、指示出し、最終判断 | sonnet |
+| システム分析 | analyst | 既存コード・API・DB分析 | sonnet |
+| UXデザイン | ux-designer | UI設計、画面遷移設計、レスポンシブ対応 | sonnet |
+| 技術リード | tech-lead | 技術設計・実装 | opus |
+| レビュアー | devils-advocate | 全成果物のレビュー・問題提起 | opus |
+
+## Skills（スラッシュコマンド）
 
 ### メインワークフロー
 
 | コマンド | 担当 | 用途 |
 |---------|------|------|
-| `/koumei-start {要件}` | 孔明 | タスク定義＋各担当への指示書を一括作成 |
-| `/koumei-analyze [タスクID]` | analyst | 既存コード・スキーマの分析を実行 |
-| `/koumei-design [タスクID]` | **ux-designer + tech-lead** | UX設計と技術設計を**並列実行** |
-| `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビューを実行 |
+| `/koumei-start {要件}` | koumei | タスク定義＋各担当への指示書を一括作成 |
+| `/koumei-analyze [タスクID]` | analyst | 既存コード・スキーマの分析 |
+| `/koumei-design [タスクID]` | ux-designer + tech-lead | UX設計と技術設計を**並列実行** |
+| `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー |
 | `/koumei-implement [フェーズ番号]` | tech-lead | レビュー通過後、実装を開始 |
-| `/koumei-status` | 孔明 | タスク進捗の確認・次アクション提案 |
+| `/koumei-status` | koumei | タスク進捗の確認・次アクション提案 |
 
-### 個別実行（差し戻し時の再実行用）
+### 個別実行（差し戻し時）
 
 | コマンド | 担当 | 用途 |
 |---------|------|------|
 | `/koumei-design-ux [タスクID]` | ux-designer | UX設計のみ単独実行 |
 | `/koumei-design-tech [タスクID]` | tech-lead | 技術設計のみ単独実行 |
 
-### 典型的な使い方
+### 典型的な流れ
 
 ```
-/koumei-start テンプレートメモ帳機能    ← タスク定義＋指示書作成
-/koumei-analyze                        ← 既存コード分析
-/koumei-design                         ← UX設計 + 技術設計（並列実行）
-/koumei-review                         ← レビュー実行
-/koumei-implement                      ← 実装開始
-/koumei-review                         ← コードレビュー
-/koumei-status                         ← 最終進捗確認
+/koumei-start メモ帳機能     ← タスク定義＋指示書作成
+/koumei-analyze              ← 既存コード分析
+/koumei-design               ← UX設計 + 技術設計（並列実行）
+/koumei-review               ← レビュー実行
+/koumei-implement            ← 実装開始
+/koumei-review               ← コードレビュー
+/koumei-status               ← 最終進捗確認
 
 ※ 迷ったら /koumei-status で次のアクションを確認
 ```
 
-## プロジェクトへの展開手順
-
-### 1. テンプレートをコピー
-
-```bash
-# このリポジトリのルートで実行
-cp -r templates/.agents /path/to/your/project/
-cp -r templates/.claude /path/to/your/project/
-```
-
-### 2. TEAM.md をカスタマイズ
-
-`.agents/TEAM.md` を開き、以下を自プロジェクトに合わせて編集:
-
-- **プロジェクト名・概要**
-- **対象プロジェクトテーブル**: パス、フレームワーク、役割を記載
-- **通信アーキテクチャ**: クライアント→API→DB等の構成図
-- **開発規約**: プロジェクト固有のルール
-
-### 3. 各担当の CLAUDE.md をカスタマイズ
-
-最低限編集が必要な箇所:
-
-| ファイル | 編集箇所 |
-|---------|---------|
-| `koumei/CLAUDE.md` | 参照ドキュメントのパス、対象プロジェクト |
-| `analyst/CLAUDE.md` | 分析対象プロジェクトのパス・技術スタック |
-| `ux-designer/CLAUDE.md` | UIフレームワーク、デザインシステム、既存コンポーネント |
-| `tech-lead/CLAUDE.md` | 対象プロジェクトの技術スタック詳細 |
-| `devils-advocate/CLAUDE.md` | レビュー観点のプロジェクト固有項目 |
-
-各ファイルに `{{PROJECT_PATH}}` 等のプレースホルダーがあるので、実際のパスに置換する。
-
-### 4. スキルで開始
-
-```
-/koumei-start テンプレートメモ帳機能
-```
-
-タスク定義と全担当への指示書が自動生成される。以降は各スキルの完了時に次のステップが案内される。
-
-## ワークフロー（スキル駆動）
+## ワークフロー
 
 ```
 【設計フェーズ】
@@ -114,10 +80,10 @@ cp -r templates/.claude /path/to/your/project/
 2. /koumei-analyze             → 既存システム分析
 3. /koumei-design              → UX設計 + 技術設計を並列実行
 4. /koumei-review              → 全成果物レビュー
-   → 差し戻し: /koumei-design-ux or /koumei-design-tech で個別再実行 → /koumei-review
+   → 差し戻し: /koumei-design-ux or /koumei-design-tech → /koumei-review
 
 【実装フェーズ】
-5. /koumei-implement           → 実装（レビュー通過後のみ実行可能）
+5. /koumei-implement           → 実装（レビュー通過後のみ）
 6. /koumei-review              → コードレビュー
 
 【検証フェーズ】
@@ -125,34 +91,89 @@ cp -r templates/.claude /path/to/your/project/
 8. 動作確認 → メインブランチへ PR
 ```
 
+## セットアップ
+
+### 方法1: セットアップスクリプト
+
+```bash
+bash scripts/setup.sh /path/to/your/project
+```
+
+### 方法2: 手動コピー
+
+```bash
+cp -r templates/.agents /path/to/your/project/
+cp -r templates/.claude /path/to/your/project/
+```
+
+### カスタマイズ
+
+1. **`.agents/TEAM.md`** を編集 — プロジェクト名、対象リポジトリ、アーキテクチャ、開発規約
+2. **各担当の `CLAUDE.md`** のプレースホルダーを置換:
+
+| プレースホルダー | 内容 |
+|----------------|------|
+| `{{PROJECT_NAME}}` | プロジェクト名 |
+| `{{PROJECT_PATH}}` | プロジェクトのルートパス |
+| `{{PROJECT_1}}` / `{{PROJECT_1_PATH}}` | 対象プロジェクト名・パス |
+| `{{FRAMEWORK}}` / `{{FRAMEWORK_1}}` | フレームワーク |
+| `{{UI_FRAMEWORK}}` | UIフレームワーク |
+| `{{STYLING}}` | スタイリング手法 |
+| `{{EXISTING_COMPONENTS}}` | 既存コンポーネント |
+
+## 拡張機能
+
+### カスタムロール
+
+プロジェクト特性に応じて追加ロールを定義できる。テンプレートは `templates/.agents/custom-roles/` に用意済み。
+
+- `api-designer` — API設計担当
+- `data-engineer` — データエンジニアリング担当
+- `infra-architect` — インフラ設計担当
+
+追加手順:
+1. `.agents/{ロール名}/CLAUDE.md` を作成
+2. `TEAM.md` のチーム構成テーブルにロールを追記
+
+### セカンドオピニオン（クロスモデルレビュー）
+
+Devil's Advocateレビュー時に、Claude以外のモデル（Codex, Gemini等）によるセカンドオピニオンを取得可能。
+
+有効化: `TEAM.md` 内のセカンドオピニオン設定テーブルのコメントを外す。
+
+```markdown
+| モデル名 | プロバイダー | 呼び出し方法 |
+|---------|------------|------------|
+| codex | OpenAI | `codex -q "{プロンプト}"` |
+| gemini | Google | `gemini "{プロンプト}"` |
+```
+
+未設定の場合は通常のClaude単独レビューとして動作する。
+
 ## ディレクトリ構造
 
 ```
 your-project/
 ├── .claude/
-│   └── skills/                         # スキル定義（プロジェクト固有）
+│   └── skills/                         # スキル定義
 │       ├── koumei-start/SKILL.md
 │       ├── koumei-analyze/SKILL.md
-│       ├── koumei-design/SKILL.md      # オーケストレーター（並列実行）
-│       ├── koumei-design-ux/SKILL.md   # 個別実行用
-│       ├── koumei-design-tech/SKILL.md # 個別実行用
+│       ├── koumei-design/SKILL.md      # 並列実行オーケストレーター
+│       ├── koumei-design-ux/SKILL.md
+│       ├── koumei-design-tech/SKILL.md
 │       ├── koumei-review/SKILL.md
 │       ├── koumei-implement/SKILL.md
 │       └── koumei-status/SKILL.md
 ├── .agents/
-│   ├── TEAM.md                          # チーム構成・スキルコマンド一覧・規約
+│   ├── TEAM.md                         # チーム構成・規約
 │   ├── koumei/
-│   │   ├── CLAUDE.md                    # 最高指揮者の役割定義
-│   │   ├── tasks/                       # タスク定義
-│   │   │   └── task-001.md
-│   │   └── reports/                     # 各担当からの完了報告
-│   │       └── task-001-analyst-report.md
+│   │   ├── CLAUDE.md                   # 最高指揮者の役割定義
+│   │   ├── tasks/                      # タスク定義
+│   │   └── reports/                    # 各担当からの完了報告
 │   ├── analyst/
-│   │   ├── CLAUDE.md                    # 分析担当の役割定義
-│   │   ├── instructions/                # 孔明からの指示書
-│   │   │   └── task-001-instruction.md
-│   │   └── deliverables/                # 分析成果物
-│   │       └── task-001-analysis.md
+│   │   ├── CLAUDE.md
+│   │   ├── instructions/               # 孔明からの指示書
+│   │   └── deliverables/               # 分析成果物
 │   ├── ux-designer/
 │   │   ├── CLAUDE.md
 │   │   ├── instructions/
@@ -161,13 +182,16 @@ your-project/
 │   │   ├── CLAUDE.md
 │   │   ├── instructions/
 │   │   └── deliverables/
-│   └── devils-advocate/
-│       ├── CLAUDE.md
-│       ├── instructions/
-│       └── reviews/                     # レビュー結果
-│           └── task-001-review.md
+│   ├── devils-advocate/
+│   │   ├── CLAUDE.md
+│   │   ├── instructions/
+│   │   └── reviews/                    # レビュー結果
+│   └── custom-roles/                   # カスタムロールテンプレート
+│       ├── api-designer/CLAUDE.md
+│       ├── data-engineer/CLAUDE.md
+│       └── infra-architect/CLAUDE.md
 ```
 
-## 適用実績
+## License
 
-複数の社内プロジェクトで機能開発・移植に適用済み。
+MIT
