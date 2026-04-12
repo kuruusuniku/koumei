@@ -1,8 +1,9 @@
 ---
 name: koumei-design-tech
 description: tech-lead（技術アーキテクチャ&実装担当）として技術設計を実行する。
+argument-hint: "[タスクID]"
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Bash, Edit
+allowed-tools: Read Glob Grep Write Bash Edit
 ---
 
 # 技術アーキテクチャ&実装担当 (Tech Lead) - 技術設計

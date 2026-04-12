@@ -2,7 +2,8 @@
 name: koumei-design-ux
 description: ux-designer（UXデザイン担当）としてUI/UX設計を実行する。
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Bash, Edit
+argument-hint: "[タスクID]"
+allowed-tools: Read Glob Grep Write Bash Edit
 ---
 
 # UXデザイン担当 (UX Designer) - 設計実行

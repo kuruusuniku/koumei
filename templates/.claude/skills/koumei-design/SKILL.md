@@ -1,7 +1,9 @@
 ---
 name: koumei-design
 description: ux-designerとtech-leadを並列起動し、設計フェーズを一括実行するオーケストレーター。
-allowed-tools: Read, Glob, Grep, Write, Bash, Edit, Task
+argument-hint: "[タスクID]"
+disable-model-invocation: true
+allowed-tools: Read Glob Grep Write Bash Edit Agent
 ---
 
 # 設計フェーズ オーケストレーター

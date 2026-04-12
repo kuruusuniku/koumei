@@ -2,7 +2,7 @@
 name: koumei-status
 description: 諸葛孔明として現在のタスク進捗状況を確認し、次に実行すべきスキルコマンドを提案する。
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read Glob Grep
 ---
 
 # 諸葛孔明 - タスク進捗確認

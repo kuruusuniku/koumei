@@ -1,8 +1,9 @@
 ---
 name: koumei-implement
 description: tech-lead（技術アーキテクチャ&実装担当）として実装フェーズを開始する。設計レビュー通過後に使用。
+argument-hint: "[フェーズ番号]"
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash
+allowed-tools: Read Glob Grep Write Edit Bash
 ---
 
 # 技術アーキテクチャ&実装担当 (Tech Lead) - 実装フェーズ
