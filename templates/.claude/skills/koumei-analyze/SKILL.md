@@ -1,8 +1,9 @@
 ---
 name: koumei-analyze
-description: analyst（システム分析担当）として既存コードベースの分析を実行する。
+description: analyst（システム分析担当）として既存コードベースの分析を実行する。実データ確認・仮説と事実の区別・既存実装チェックが必須。
+argument-hint: "[タスクID]"
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Bash, Edit
+allowed-tools: Read Glob Grep Write Bash Edit
 ---
 
 # システム分析担当 (Analyst) - 分析実行
