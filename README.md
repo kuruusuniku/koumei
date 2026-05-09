@@ -112,7 +112,6 @@ chmod +x /path/to/your/project/hooks/*.sh
 
 1. **`.agents/TEAM.md`** を編集 — プロジェクト名、対象リポジトリ、アーキテクチャ、開発規約
 2. **各担当の `CLAUDE.md`** のプレースホルダーを置換:
-3. **`hooks/`** スクリプトを必要に応じて編集 — ログ出力先、品質ゲートのブロック対象、通知内容など
 
 | プレースホルダー | 内容 |
 |----------------|------|
@@ -123,6 +122,8 @@ chmod +x /path/to/your/project/hooks/*.sh
 | `{{UI_FRAMEWORK}}` | UIフレームワーク |
 | `{{STYLING}}` | スタイリング手法 |
 | `{{EXISTING_COMPONENTS}}` | 既存コンポーネント |
+
+3. **`hooks/`** スクリプトを必要に応じて編集 — ログ出力先、品質ゲートのブロック対象、通知内容など
 
 ## 拡張機能
 
@@ -214,6 +215,7 @@ your-project/
 │       └── koumei-status/SKILL.md
 ├── .agents/
 │   ├── TEAM.md                         # チーム構成・規約
+│   ├── logs/                           # 操作ログ（log-operation.sh が自動生成）
 │   ├── koumei/
 │   │   ├── CLAUDE.md                   # 最高指揮者の役割定義
 │   │   ├── tasks/                      # タスク定義
