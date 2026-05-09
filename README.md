@@ -104,12 +104,15 @@ bash scripts/setup.sh /path/to/your/project
 ```bash
 cp -r templates/.agents /path/to/your/project/
 cp -r templates/.claude /path/to/your/project/
+cp -r templates/hooks /path/to/your/project/
+chmod +x /path/to/your/project/hooks/*.sh
 ```
 
 ### カスタマイズ
 
 1. **`.agents/TEAM.md`** を編集 — プロジェクト名、対象リポジトリ、アーキテクチャ、開発規約
 2. **各担当の `CLAUDE.md`** のプレースホルダーを置換:
+3. **`hooks/`** スクリプトを必要に応じて編集 — ログ出力先、品質ゲートのブロック対象、通知内容など
 
 | プレースホルダー | 内容 |
 |----------------|------|
@@ -122,6 +125,21 @@ cp -r templates/.claude /path/to/your/project/
 | `{{EXISTING_COMPONENTS}}` | 既存コンポーネント |
 
 ## 拡張機能
+
+### Claude Code Hooks
+
+セットアップスクリプト実行時に `hooks/` スクリプトと `.claude/settings.json` が展開される。Claude Code の操作イベントにフックして、自動ログ・品質ゲート・フォーマット・通知を提供する。
+
+| スクリプト | トリガー | 機能 |
+|-----------|---------|------|
+| `hooks/log-operation.sh` | PostToolUse（全ツール） | 全操作を `.agents/logs/YYYY-MM-DD.jsonl` に記録 |
+| `hooks/quality-gate.sh` | PreToolUse（Write/Edit/MultiEdit） | `.agents/TEAM.md` 等の重要ファイルへの直接編集をブロック |
+| `hooks/auto-format.sh` | PostToolUse（Write/Edit/MultiEdit） | prettier が利用可能な場合、コードファイルを自動フォーマット |
+| `hooks/notify-phase.sh` | PostToolUse（Write） | `deliverables/`・`reviews/`・`reports/` への書き込みをmacOS通知で通知 |
+
+**`.claude/settings.json`** がフック登録を担う。既存の `settings.json` がある場合、setup.sh が jq でマージするため既存設定は保持される。
+
+カスタマイズ: 各 `.sh` ファイルを直接編集してブロック対象ファイルや通知メッセージを変更できる。
 
 ### カスタムロール
 
@@ -178,11 +196,17 @@ Devil's Advocateレビュー時に、Claude以外のモデル（Codex, Gemini等
 
 ```
 your-project/
+├── hooks/                              # Claude Code Hooks スクリプト
+│   ├── log-operation.sh               # 操作ログ記録
+│   ├── quality-gate.sh                # 品質ゲート（重要ファイルの直接編集をブロック）
+│   ├── auto-format.sh                 # 自動フォーマット（prettier）
+│   └── notify-phase.sh                # フェーズ完了通知（macOS）
 ├── .claude/
-│   └── skills/                         # スキル定義
+│   ├── settings.json                  # hooks 設定（setup.sh がマージ）
+│   └── skills/                        # スキル定義
 │       ├── koumei-start/SKILL.md
 │       ├── koumei-analyze/SKILL.md
-│       ├── koumei-design/SKILL.md      # 並列実行オーケストレーター
+│       ├── koumei-design/SKILL.md     # 並列実行オーケストレーター
 │       ├── koumei-design-ux/SKILL.md
 │       ├── koumei-design-tech/SKILL.md
 │       ├── koumei-review/SKILL.md
