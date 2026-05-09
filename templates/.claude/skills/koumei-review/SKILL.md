@@ -44,8 +44,19 @@ disable-model-invocation: true
 ### 2) レビューフェーズ自動判定
 上記「判定ロジック」に従いレビュー種別を決定し、ユーザに表示。
 
-### 3) レビュー実行
-devils-advocateエージェントにレビューを委譲する。
+### 3) レビューモデル選択・実行
+
+TEAM.md の「レビューモデル設定」の `review_mode` に応じてモデルを選択する。
+
+```
+【default】  codex → claude(opus)
+【economy】  codex → lmstudio → claude(opus)
+【claude-only】 claude(opus) のみ
+```
+
+選択されたモデルをユーザーに表示: 「レビューモデル: {codex / lmstudio / claude (opus)}」
+
+モデル別の実行手順は [docs/review-models.md](docs/review-models.md) を参照。
 
 ### 4) レビュー結果保存
 命名規則に従ったファイル名で保存。
