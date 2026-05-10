@@ -49,7 +49,16 @@ if [ -f "$TEMPLATE_DIR/.claude/settings.json" ]; then
     if command -v jq >/dev/null 2>&1; then
       EXISTING="$TARGET_DIR/.claude/settings.json"
       TEMPLATE="$TEMPLATE_DIR/.claude/settings.json"
-      MERGED=$(jq -s '.[0] * {hooks: (.[0].hooks // {} | to_entries + (.[1].hooks // {} | to_entries) | group_by(.key) | map({key: .[0].key, value: [.[] | .value[]] | unique}) | from_entries)}' "$EXISTING" "$TEMPLATE" 2>/dev/null)
+      MERGED=$(jq -s '
+        (.[0] | del(.hooks)) * (.[1] | del(.hooks)) +
+        { hooks: (
+          (.[0].hooks // {}) as $a |
+          (.[1].hooks // {}) as $b |
+          ($a | keys) + ($b | keys) | unique |
+          map(. as $k | {($k): (($a[$k] // []) + ($b[$k] // []))}) |
+          add // {}
+        )}
+      ' "$EXISTING" "$TEMPLATE" 2>/dev/null)
       if [ $? -eq 0 ] && [ -n "$MERGED" ]; then
         echo "$MERGED" > "$EXISTING"
         echo "  hooks をマージしました"
