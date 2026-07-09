@@ -1,7 +1,7 @@
 ---
 name: koumei-start
-description: 諸葛孔明として新しいタスクを開始する。全自動/順次モードを選択し、要件定義からPR作成までを統括する。
-argument-hint: "{要件テキスト} [--manual]"
+description: 諸葛孔明として新しいタスクを開始する。全自動/順次/マルチタスクモードを選択し、要件定義からPR作成までを統括する。
+argument-hint: "{要件テキスト} [--manual] [--multi]"
 disable-model-invocation: true
 allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 ---
@@ -36,7 +36,10 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 `$ARGUMENTS` を確認し、実行モードを決定する:
 
 1. **`--manual` が含まれる場合** → 順次モード（Phase 0 のみ実行し案内して終了）
-2. **`--manual` が含まれない場合** → AskUserQuestion でモード選択を提示:
+2. **`--multi` が含まれる場合** → マルチタスクモード（[docs/multi-task.md](docs/multi-task.md) の手順で実行）
+3. **どちらも含まれない場合** → AskUserQuestion でモード選択を提示:
+
+※ 要件テキストに独立した複数の要求が含まれると判断した場合は、選択肢にマルチタスクモードを加えて提示すること。
 
 ```
 さて、今回の戦をいかなる陣立てで進めるか、お聞かせ願いたい。

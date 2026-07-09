@@ -111,6 +111,16 @@ Devil's Advocateレビュー時に、Claude以外のモデルによるセカン�
 **有効化方法**: 上記テーブルのコメントを外し、使用するモデルを記載してください。
 セカンドオピニオンが未設定の場合、`/koumei-review` は通常のClaude単独レビューとして動作します。
 
+### マルチタスク実行（オプション）
+
+`/koumei-start {要件} --multi` で、独立した複数タスクを並列実行できます。
+
+- 諸葛孔明が要件を複数タスクに分割し、タスクごとに **task-manager（部将）** サブエージェントを起動
+- 各 task-manager は git worktree 内で Phase 1〜7 のパイプラインを完遂し、PR作成まで行う
+- 依存関係・ファイル競合のあるタスクは直列実行される
+- **前提**: Claude Code v2.1.172 以降（サブエージェントのネスト起動）、`.agents/`・`.claude/` がリポジトリにコミットされていること
+- 詳細手順: `.claude/skills/koumei-start/docs/multi-task.md` / 役割定義: `.agents/task-manager/CLAUDE.md`
+
 ### ワークフロー（スキル駆動）
 
 ```
