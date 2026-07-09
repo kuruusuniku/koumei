@@ -1,7 +1,7 @@
 ---
 name: koumei-review
 description: 成果物またはコードのレビューを実行する。レビューフェーズを自動判定し、devils-advocateエージェントにレビューを委譲する。
-argument-hint: "[タスクID] [--security] [--second-opinion] [--model codex|lmstudio|claude]"
+argument-hint: "[タスクID] [--security] [--second-opinion] [--model codex|lmstudio|grok|claude]"
 disable-model-invocation: true
 ---
 
@@ -37,7 +37,7 @@ disable-model-invocation: true
 - `$ARGUMENTS` に `second-opinion` / `--second-opinion` → セカンドオピニオンモード
 - 両方指定 → 両モード同時実行
 - どちらもなし → 通常レビュー
-- `$ARGUMENTS` に `--model {codex|lmstudio|claude}` → レビューモデルの一時強制指定（TEAM.md の `review_mode` より優先。TEAM.md の編集は不要）
+- `$ARGUMENTS` に `--model {codex|lmstudio|grok|claude}` → レビューモデルの一時強制指定（TEAM.md の `review_mode` より優先。TEAM.md の編集は不要）。grok 等の外部CLIモデルは TEAM.md「外部CLIモデル定義」に登録されたものを指定できる
 
 ### 1) タスクID取得
 引数からタスクIDを取得。未指定の場合はユーザに確認。

@@ -3,8 +3,10 @@
 ## モデル判定フロー
 
 ```
-0. `--model {codex|lmstudio|claude}` フラグが指定されていれば、そのモデルを使用
+0. `--model {codex|lmstudio|grok|claude}` フラグが指定されていれば、そのモデルを使用
    （以降の判定をスキップ。指定モデルが利用不可・タイムアウトの場合は claude にフォールバック）
+   ※ TEAM.md「レビューモデル設定」の優先度テーブルに grok 等の外部CLIモデルが
+     組み込まれている場合は、他のモデルと同様に利用可否を確認して優先度順に選択する
 
 1. TEAM.md の review_mode / review_timeout を確認（未設定なら default / 600秒）
 
@@ -63,6 +65,18 @@ mcp__lmstudio-mcp__chat_completion(
 
 - LM Studio のレビュー結果を devils-advocate のレビューフォーマットに整形して保存する
 - LM Studio が利用不可（接続エラー等）または `review_timeout` を超過した場合は Claude にフォールバックし、理由を報告に記録する
+
+## 手順D: 外部CLIモデルでレビュー実行（grok 等）
+
+TEAM.md「外部CLIモデル定義」に登録された CLI（例: grok → `grok -p "{プロンプト}"`）を使用する。
+
+- `command -v {モデル名}` で利用可否を確認する。不可なら Claude にフォールバックし、理由を記録する
+- Bash ツールで実行し、`review_timeout` を timeout パラメータに設定する。超過したら中断して Claude にフォールバックする
+- プロンプトに含める内容:
+  - devils-advocate のレビュー観点（セキュリティ / パフォーマンス / 保守性 / アーキテクチャ）
+  - 重大度（Critical / Major / Minor / Suggestion）と VERDICT（PASS / NEEDS_FIX）の明記指示
+  - レビュー対象の成果物内容または実装差分
+- 結果を devils-advocate のレビューフォーマットに整形して保存する
 
 ## 手順C: Claude でレビュー実行（デフォルト・フォールバック）
 

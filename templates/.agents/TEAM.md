@@ -36,11 +36,24 @@
 
 オーケストレーター（`/koumei-start` の各Phase、`/koumei-design`、`/koumei-review`）は、サブエージェント起動時に上記テーブルの「モデル」列を Agent tool の `model` パラメータに指定する。モデル列を書き換えるだけで、全スキルの起動モデルが変わる。
 
-- 指定可能な値: `haiku` / `sonnet` / `opus` / `fable`（またはフルモデルID）
+- 指定可能な値: `haiku` / `sonnet` / `opus` / `fable`（またはフルモデルID）、および下記「外部CLIモデル定義」に登録した外部モデル名（`grok` / `codex` 等）
+- **外部CLIモデルを指定した場合**: オーケストレーターは Agent tool ではなく Bash 経由でその CLI を呼び出す。CLI が利用不可（`command -v` で不在）の場合は Claude の既定モデルにフォールバックし、その旨を報告する
 - **配置の原則**: 高単価モデルは「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に置く
   - **devils-advocate = fable**: レビューVERDICTがフロー全体（差し戻しループ）を制御する品質ゲートであり、誤判定のコストが最も高い
   - **tech-lead 設計 = fable / 実装 = opus**: 設計ミスは実装で増幅される。実装はトークン量が多いため opus（または Codex 委譲）
   - **koumei / analyst / ux-designer = sonnet**: オーケストレーションは機械的、分析は読み取り中心
+
+#### 外部CLIモデル定義
+
+モデル列・レビューモデル・セカンドオピニオンで外部CLIモデルを使う場合の呼び出し方法。使用する CLI の仕様に合わせて編集してください。
+
+| モデル名 | 呼び出し方法 | 備考 |
+|---------|------------|------|
+| codex | `codex -q "{プロンプト}"` | OpenAI Codex CLI |
+| grok | `grok -p "{プロンプト}"` | xAI Grok CLI（grok-4.5 等）。インストール済みの場合のみ |
+| gemini | `gemini "{プロンプト}"` | Google Gemini CLI |
+
+利用可否は `command -v {モデル名}` で確認し、不可の場合は Claude にフォールバックして報告する。
 
 ### カスタムロール（オプション）
 
@@ -106,6 +119,7 @@
 | 1 | codex | `/codex:review --wait` | codex スキルが利用可能 |
 | 2 | lmstudio | `mcp__lmstudio-mcp__chat_completion` | 節約モード時 (`review_mode: economy`) |
 | 3 | claude | Agent ツール（モデルは「チーム構成」の devils-advocate 列。既定: fable） | 常に利用可能 |
+| - | grok | grok CLI（「外部CLIモデル定義」参照） | `--model grok` 指定時。常用したい場合はこの表の優先度に組み込む |
 
 #### レビューモード
 
@@ -129,6 +143,7 @@ Devil's Advocateレビュー時に、Claude以外のモデルによるセカン�
 | モデル名 | プロバイダー | 呼び出し方法 |
 |---------|------------|------------|
 | codex | OpenAI | `codex -q "{プロンプト}"` |
+| grok | xAI | `grok -p "{プロンプト}"` |
 | gemini | Google | `gemini "{プロンプト}"` |
 -->
 
