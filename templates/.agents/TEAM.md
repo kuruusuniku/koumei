@@ -29,8 +29,18 @@
 | **最高指揮者** | 諸葛孔明 (koumei) | `.agents/koumei/` | 全体統括、タスク分割、指示出し、最終判断 | sonnet |
 | **システム分析担当** | analyst | `.agents/analyst/` | 既存コード・API・DB分析 | sonnet |
 | **UXデザイン担当** | ux-designer | `.agents/ux-designer/` | UI設計、画面遷移設計、レスポンシブ対応 | sonnet |
-| **技術アーキテクチャ&実装担当** | tech-lead | `.agents/tech-lead/` | 技術設計・実装 | **opus** |
-| **悪魔の代弁者** | devils-advocate | `.agents/devils-advocate/` | 全成果物のレビュー・問題提起 | **opus** |
+| **技術アーキテクチャ&実装担当** | tech-lead | `.agents/tech-lead/` | 技術設計・実装 | **fable**（設計）/ **opus**（実装） |
+| **悪魔の代弁者** | devils-advocate | `.agents/devils-advocate/` | 全成果物のレビュー・問題提起 | **fable** |
+
+#### モデル指定の仕組み
+
+オーケストレーター（`/koumei-start` の各Phase、`/koumei-design`、`/koumei-review`）は、サブエージェント起動時に上記テーブルの「モデル」列を Agent tool の `model` パラメータに指定する。モデル列を書き換えるだけで、全スキルの起動モデルが変わる。
+
+- 指定可能な値: `haiku` / `sonnet` / `opus` / `fable`（またはフルモデルID）
+- **配置の原則**: 高単価モデルは「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に置く
+  - **devils-advocate = fable**: レビューVERDICTがフロー全体（差し戻しループ）を制御する品質ゲートであり、誤判定のコストが最も高い
+  - **tech-lead 設計 = fable / 実装 = opus**: 設計ミスは実装で増幅される。実装はトークン量が多いため opus（または Codex 委譲）
+  - **koumei / analyst / ux-designer = sonnet**: オーケストレーションは機械的、分析は読み取り中心
 
 ### カスタムロール（オプション）
 
@@ -95,7 +105,7 @@
 |--------|--------|------------|------|
 | 1 | codex | `/codex:review --wait` | codex スキルが利用可能 |
 | 2 | lmstudio | `mcp__lmstudio-mcp__chat_completion` | 節約モード時 (`review_mode: economy`) |
-| 3 | claude (opus) | Agent ツール（デフォルト） | 常に利用可能 |
+| 3 | claude | Agent ツール（モデルは「チーム構成」の devils-advocate 列。既定: fable） | 常に利用可能 |
 
 #### レビューモード
 
@@ -105,7 +115,7 @@ review_mode: default
 
 - `default` — 優先度順（codex → claude）
 - `economy` — lmstudio-mcp を優先（codex → lmstudio → claude）
-- `claude-only` — 常に Claude (opus) を使用
+- `claude-only` — 常に Claude（devils-advocate のモデル列。既定: fable）を使用
 
 ### セカンドオピニオン設定（オプション）
 
@@ -121,6 +131,16 @@ Devil's Advocateレビュー時に、Claude以外のモデルによるセカン�
 
 **有効化方法**: 上記テーブルのコメントを外し、使用するモデルを記載してください。
 セカンドオピニオンが未設定の場合、`/koumei-review` は通常のClaude単独レビューとして動作します。
+
+### マルチタスク実行（オプション）
+
+`/koumei-start {要件} --multi` で、独立した複数タスクを並列実行できます。
+
+- 諸葛孔明が要件を複数タスクに分割し、タスクごとに **task-manager（部将）** サブエージェントを起動
+- 各 task-manager は git worktree 内で Phase 1〜7 のパイプラインを完遂し、PR作成まで行う
+- 依存関係・ファイル競合のあるタスクは直列実行される
+- **前提**: Claude Code v2.1.172 以降（サブエージェントのネスト起動）、`.agents/`・`.claude/` がリポジトリにコミットされていること
+- 詳細手順: `.claude/skills/koumei-start/docs/multi-task.md` / 役割定義: `.agents/task-manager/CLAUDE.md`
 
 ### ワークフロー（スキル駆動）
 

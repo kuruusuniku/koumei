@@ -1,7 +1,7 @@
 ---
 name: koumei-start
-description: 諸葛孔明として新しいタスクを開始する。全自動/順次モードを選択し、要件定義からPR作成までを統括する。
-argument-hint: "{要件テキスト} [--manual]"
+description: 諸葛孔明として新しいタスクを開始する。全自動/順次/マルチタスクモードを選択し、要件定義からPR作成までを統括する。
+argument-hint: "{要件テキスト} [--manual] [--multi]"
 disable-model-invocation: true
 allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 ---
@@ -26,7 +26,8 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 詳細は [docs/rules.md](docs/rules.md) を参照。要点:
 
 - **レビュー（devils-advocate）は必ず独立した別エージェントで実行すること**（統合禁止）
-- タスク種別（バグ修正小/中/機能追加）でフェーズスキップあり
+- タスク種別（軽微修正/バグ修正小/中/機能追加）でフェーズスキップあり。ただし **Phase 6（コードレビュー）はいかなる種別でもスキップ禁止**
+- サブエージェント起動時は TEAM.md のモデル列を `model` パラメータに指定する（[docs/phases.md](docs/phases.md) 冒頭参照）
 
 ---
 
@@ -35,7 +36,10 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 `$ARGUMENTS` を確認し、実行モードを決定する:
 
 1. **`--manual` が含まれる場合** → 順次モード（Phase 0 のみ実行し案内して終了）
-2. **`--manual` が含まれない場合** → AskUserQuestion でモード選択を提示:
+2. **`--multi` が含まれる場合** → マルチタスクモード（[docs/multi-task.md](docs/multi-task.md) の手順で実行）
+3. **どちらも含まれない場合** → AskUserQuestion でモード選択を提示:
+
+※ 要件テキストに独立した複数の要求が含まれると判断した場合は、選択肢にマルチタスクモードを加えて提示すること。
 
 ```
 さて、今回の戦をいかなる陣立てで進めるか、お聞かせ願いたい。
@@ -97,7 +101,7 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 | 6 | コードレビュー | devils-advocate | 実装コードの検分（APPROVED/REVISE） |
 | 7 | PR作成 | koumei | ブランチpush + PR作成 |
 
-**タスク種別によるスキップ**: バグ修正（小）は Phase 3,4 をスキップ。詳細は [docs/rules.md](docs/rules.md) 参照。
+**タスク種別によるスキップ**: 軽微修正（クイック）は Phase 1〜4、バグ修正（小）は Phase 3,4 をスキップ。Phase 6 は常に必須。詳細は [docs/rules.md](docs/rules.md) 参照。
 
 ---
 

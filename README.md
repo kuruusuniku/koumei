@@ -35,8 +35,11 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 | 最高指揮者 | koumei | 全体統括、タスク分割、指示出し、最終判断 | sonnet |
 | システム分析 | analyst | 既存コード・API・DB分析 | sonnet |
 | UXデザイン | ux-designer | UI設計、画面遷移設計、レスポンシブ対応 | sonnet |
-| 技術リード | tech-lead | 技術設計・実装 | opus |
-| レビュアー | devils-advocate | 全成果物のレビュー・問題提起 | opus |
+| 技術リード | tech-lead | 技術設計・実装 | fable（設計）/ opus（実装） |
+| レビュアー | devils-advocate | 全成果物のレビュー・問題提起 | fable |
+| タスク並列実行（オプション） | task-manager | マルチタスク時に1タスクのPhase 1〜7をworktree内で完遂 | inherit |
+
+**モデル戦略**: 高単価・高知能モデル（fable）は「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に配置する。レビューVERDICTはフロー全体を制御する品質ゲートのため devils-advocate に、設計ミスは実装で増幅されるため tech-lead の設計フェーズに fable を使い、トークン量の多い実装は opus（または Codex 委譲）で実行する。モデルは `TEAM.md` のチーム構成テーブルの「モデル」列で一元管理され、オーケストレーターがサブエージェント起動時に `model` パラメータとして渡す。
 
 ## Skills（スラッシュコマンド）
 
@@ -44,7 +47,7 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 
 | コマンド | 担当 | 用途 |
 |---------|------|------|
-| `/koumei-start {要件}` | koumei | タスク定義＋各担当への指示書を一括作成 |
+| `/koumei-start {要件}` | koumei | タスク定義＋各担当への指示書を一括作成（全自動/`--manual` 順次/`--multi` マルチタスク） |
 | `/koumei-analyze [タスクID]` | analyst | 既存コード・スキーマの分析 |
 | `/koumei-design [タスクID]` | ux-designer + tech-lead | UX設計と技術設計を**並列実行** |
 | `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー |
@@ -91,6 +94,19 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 8. 動作確認 → メインブランチへ PR
 ```
 
+### タスク種別による短縮フロー
+
+`/koumei-start` はタスク種別を判定し、不要なフェーズを自動でスキップする。
+
+| 種別 | フロー |
+|------|--------|
+| 軽微修正（クイック） | 定義(簡易)→実装→コードレビュー→PR（分析・設計をスキップ） |
+| バグ修正（小） | 定義→分析→分析レビュー→実装→コードレビュー→PR（設計をスキップ） |
+| バグ修正（中） | フルフローからUX設計のみスキップ可 |
+| 機能追加/移植 | フルフロー |
+
+**コードレビューはいかなる種別でもスキップされない**（品質担保の不変則）。
+
 ## セットアップ
 
 ### 方法1: セットアップスクリプト
@@ -122,6 +138,28 @@ cp -r templates/.claude /path/to/your/project/
 | `{{EXISTING_COMPONENTS}}` | 既存コンポーネント |
 
 ## 拡張機能
+
+### マルチタスク並列実行
+
+`/koumei-start {要件} --multi` で、独立した複数タスクを並列に完遂できる。
+
+```
+        ┌──────────────┐
+        │  諸葛孔明     │  要件分割・実行計画・結果集約
+        └──────┬───────┘
+    ┌──────────┼──────────┐
+┌───┴────┐ ┌───┴────┐ ┌───┴────┐
+│task-mgr│ │task-mgr│ │task-mgr│  タスクごとの部将（並列）
+│task-1  │ │task-2  │ │task-3  │  各自 worktree で Phase 1〜7 → PR
+└────────┘ └────────┘ └────────┘
+```
+
+- 孔明が要件を「1タスク=1ブランチ=1PR」の単位に分割し、依存・ファイル競合を判定して並列/直列の実行計画を立てる（実行前にユーザー承認）
+- 各 task-manager は git worktree 内で分析〜PR作成までを完遂する（レビュー独立の厳格ルールも通常フローと同一）
+- task-manager はユーザーに質問できないため、3回差し戻し等の判断事項は HALTED として孔明に返り、孔明がまとめてユーザーに諮る
+- 前提: Claude Code v2.1.172 以降（サブエージェントのネスト起動）
+
+単一タスクや逐次実行なら task-manager は不要で、孔明が直接統括する（デフォルト動作）。
 
 ### カスタムロール
 
@@ -180,12 +218,17 @@ Devil's Advocateレビュー時に、Claude以外のモデル（Codex, Gemini等
 your-project/
 ├── .claude/
 │   └── skills/                         # スキル定義
-│       ├── koumei-start/SKILL.md
+│       ├── koumei-start/
+│       │   ├── SKILL.md
+│       │   └── docs/                   # phases / rules / error-handling /
+│       │                               #  task-template / multi-task
 │       ├── koumei-analyze/SKILL.md
 │       ├── koumei-design/SKILL.md      # 並列実行オーケストレーター
 │       ├── koumei-design-ux/SKILL.md
 │       ├── koumei-design-tech/SKILL.md
-│       ├── koumei-review/SKILL.md
+│       ├── koumei-review/
+│       │   ├── SKILL.md
+│       │   └── docs/extended-modes.md  # セキュリティ監査 / セカンドオピニオン
 │       ├── koumei-implement/SKILL.md
 │       └── koumei-status/SKILL.md
 ├── .agents/
@@ -210,6 +253,8 @@ your-project/
 │   │   ├── CLAUDE.md
 │   │   ├── instructions/
 │   │   └── reviews/                    # レビュー結果
+│   ├── task-manager/
+│   │   └── CLAUDE.md                   # マルチタスク時の実行単位（部将）
 │   └── custom-roles/                   # カスタムロールテンプレート
 │       ├── api-designer/CLAUDE.md
 │       ├── data-engineer/CLAUDE.md

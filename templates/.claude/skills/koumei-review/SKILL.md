@@ -49,12 +49,14 @@ disable-model-invocation: true
 TEAM.md の「レビューモデル設定」の `review_mode` に応じてモデルを選択する。
 
 ```
-【default】  codex → claude(opus)
-【economy】  codex → lmstudio → claude(opus)
-【claude-only】 claude(opus) のみ
+【default】  codex → claude
+【economy】  codex → lmstudio → claude
+【claude-only】 claude のみ
 ```
 
-選択されたモデルをユーザーに表示: 「レビューモデル: {codex / lmstudio / claude (opus)}」
+選択されたモデルをユーザーに表示: 「レビューモデル: {codex / lmstudio / claude ({モデル名})}」
+
+claude で実行する場合は devils-advocate エージェントに委譲し、`.agents/TEAM.md`「チーム構成」の devils-advocate のモデル列を Agent tool の `model` パラメータに指定する（既定: fable）。
 
 モデル別の実行手順は [docs/review-models.md](docs/review-models.md) を参照。
 

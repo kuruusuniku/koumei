@@ -10,17 +10,17 @@
    【default モード】
    a. codex スキルが利用可能か確認（/codex:review が存在するか）
       → 利用可能 → Codex でレビュー実行（手順A）
-      → 利用不可 → Claude (opus) でレビュー実行（手順C）
+      → 利用不可 → Claude でレビュー実行（手順C）
 
    【economy モード】
    a. codex スキルが利用可能か確認
       → 利用可能 → Codex でレビュー実行（手順A）
    b. lmstudio-mcp が利用可能か確認（ToolSearch で mcp__lmstudio-mcp__chat_completion を検索）
       → 利用可能 → LM Studio でレビュー実行（手順B）
-   c. いずれも不可 → Claude (opus) でレビュー実行（手順C）
+   c. いずれも不可 → Claude でレビュー実行（手順C）
 
    【claude-only モード】
-   → Claude (opus) でレビュー実行（手順C）
+   → Claude でレビュー実行（手順C）
 ```
 
 ## 手順A: Codex でレビュー実行
@@ -57,7 +57,8 @@ mcp__lmstudio-mcp__chat_completion(
 - LM Studio のレビュー結果を devils-advocate のレビューフォーマットに整形して保存する
 - LM Studio が利用不可（接続エラー等）の場合は Claude にフォールバックする
 
-## 手順C: Claude (opus) でレビュー実行（デフォルト・フォールバック）
+## 手順C: Claude でレビュー実行（デフォルト・フォールバック）
 
 - 従来通り devils-advocate エージェントにレビューを委譲する
+- 起動時、`.agents/TEAM.md`「チーム構成」の devils-advocate のモデル列を Agent tool の `model` パラメータに指定する（既定: fable）
 - レビュー観点は `devils-advocate/CLAUDE.md` に定義されたものを使用する

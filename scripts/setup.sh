@@ -30,8 +30,10 @@ echo "=== 諸葛孔明エージェントチーム セットアップ ==="
 echo "対象: $TARGET_DIR"
 echo ""
 
-# テンプレートをコピー
-cp -r "$TEMPLATE_DIR/.agents" "$TARGET_DIR/.agents"
+# テンプレートをコピー（既存ディレクトリがある場合は中身をマージ）
+mkdir -p "$TARGET_DIR/.agents" "$TARGET_DIR/.claude/skills"
+cp -r "$TEMPLATE_DIR/.agents/." "$TARGET_DIR/.agents/"
+cp -r "$TEMPLATE_DIR/.claude/skills/." "$TARGET_DIR/.claude/skills/"
 
 # hooks スクリプトをコピー
 if [ -d "$TEMPLATE_DIR/hooks" ]; then
