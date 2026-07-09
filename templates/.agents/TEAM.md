@@ -111,11 +111,14 @@
 
 ```
 review_mode: default
+review_timeout: 600
 ```
 
 - `default` — 優先度順（codex → claude）
 - `economy` — lmstudio-mcp を優先（codex → lmstudio → claude）
 - `claude-only` — 常に Claude（devils-advocate のモデル列。既定: fable）を使用
+- `review_timeout` — codex / lmstudio レビューの制限時間（秒）。超過したら中断し、次の優先モデルにフォールバックする
+- 一時的な切り替えは `/koumei-review --model claude` のように `--model` フラグで指定できる（TEAM.md の編集不要）
 
 ### セカンドオピニオン設定（オプション）
 

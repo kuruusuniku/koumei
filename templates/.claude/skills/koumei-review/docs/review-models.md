@@ -3,7 +3,10 @@
 ## モデル判定フロー
 
 ```
-1. TEAM.md の review_mode を確認（未設定なら default）
+0. `--model {codex|lmstudio|claude}` フラグが指定されていれば、そのモデルを使用
+   （以降の判定をスキップ。指定モデルが利用不可・タイムアウトの場合は claude にフォールバック）
+
+1. TEAM.md の review_mode / review_timeout を確認（未設定なら default / 600秒）
 
 2. review_mode に応じてモデルを選択:
 
@@ -33,7 +36,11 @@ codex スキルの review コマンドを使用する。
   Skill(skill: "codex:review", args: "--wait")
   ```
 - Codex のレビュー結果を devils-advocate のレビューフォーマットに整形して保存する
-- Codex が利用不可（エラー・タイムアウト）の場合は Claude にフォールバックする
+
+**タイムアウト（遅い場合の切り替え）:**
+- TEAM.md の `review_timeout`（秒。既定: 600）を制限時間とする。Bash 経由で codex CLI を呼び出す場合は Bash ツールの timeout パラメータに設定する
+- 制限時間の超過、エラー、利用不可の場合は次の優先モデル（economy は lmstudio、それ以外は claude）にフォールバックする
+- フォールバックした場合、ユーザーへの報告とレビュー結果の冒頭に理由を記録する（例: 「codex がタイムアウトしたため claude (fable) で実行」）
 
 ## 手順B: LM Studio でレビュー実行（economy モード）
 
@@ -55,7 +62,7 @@ mcp__lmstudio-mcp__chat_completion(
 ```
 
 - LM Studio のレビュー結果を devils-advocate のレビューフォーマットに整形して保存する
-- LM Studio が利用不可（接続エラー等）の場合は Claude にフォールバックする
+- LM Studio が利用不可（接続エラー等）または `review_timeout` を超過した場合は Claude にフォールバックし、理由を報告に記録する
 
 ## 手順C: Claude でレビュー実行（デフォルト・フォールバック）
 
