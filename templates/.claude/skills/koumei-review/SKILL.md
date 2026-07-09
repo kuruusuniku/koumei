@@ -1,7 +1,7 @@
 ---
 name: koumei-review
 description: 成果物またはコードのレビューを実行する。レビューフェーズを自動判定し、devils-advocateエージェントにレビューを委譲する。
-argument-hint: "[タスクID] [--security] [--second-opinion]"
+argument-hint: "[タスクID] [--security] [--second-opinion] [--model codex|lmstudio|claude]"
 disable-model-invocation: true
 ---
 
@@ -37,6 +37,7 @@ disable-model-invocation: true
 - `$ARGUMENTS` に `second-opinion` / `--second-opinion` → セカンドオピニオンモード
 - 両方指定 → 両モード同時実行
 - どちらもなし → 通常レビュー
+- `$ARGUMENTS` に `--model {codex|lmstudio|claude}` → レビューモデルの一時強制指定（TEAM.md の `review_mode` より優先。TEAM.md の編集は不要）
 
 ### 1) タスクID取得
 引数からタスクIDを取得。未指定の場合はユーザに確認。
@@ -47,6 +48,7 @@ disable-model-invocation: true
 ### 3) レビューモデル選択・実行
 
 TEAM.md の「レビューモデル設定」の `review_mode` に応じてモデルを選択する。
+`--model` フラグが指定されている場合はそれを最優先する（指定モデルが利用不可なら claude にフォールバック）。
 
 ```
 【default】  codex → claude
@@ -54,7 +56,9 @@ TEAM.md の「レビューモデル設定」の `review_mode` に応じてモデ
 【claude-only】 claude のみ
 ```
 
-選択されたモデルをユーザーに表示: 「レビューモデル: {codex / lmstudio / claude ({モデル名})}」
+codex / lmstudio の実行には TEAM.md の `review_timeout`（秒。既定: 600）を制限時間として適用し、超過した場合は中断して次の優先モデルにフォールバックする。
+
+選択されたモデルをユーザーに表示: 「レビューモデル: {codex / lmstudio / claude ({モデル名})}」。フォールバックが発生した場合は理由（タイムアウト・利用不可等）も添える。
 
 claude で実行する場合は devils-advocate エージェントに委譲し、`.agents/TEAM.md`「チーム構成」の devils-advocate のモデル列を Agent tool の `model` パラメータに指定する（既定: fable）。
 
