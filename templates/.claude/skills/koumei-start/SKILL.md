@@ -27,6 +27,7 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 
 - **レビュー（devils-advocate）は必ず独立した別エージェントで実行すること**（統合禁止）
 - タスク種別（軽微修正/バグ修正小/中/機能追加）でフェーズスキップあり。ただし **Phase 6（コードレビュー）はいかなる種別でもスキップ禁止**
+- サブエージェント起動時は TEAM.md のモデル列を `model` パラメータに指定する（[docs/phases.md](docs/phases.md) 冒頭参照）
 
 ---
 

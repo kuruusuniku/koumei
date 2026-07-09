@@ -1,5 +1,14 @@
 # Phase 1〜7 詳細手順
 
+## モデル指定（全フェーズ共通）
+
+サブエージェント起動時は、`.agents/TEAM.md`「チーム構成」テーブルの「モデル」列を確認し、Agent tool の `model` パラメータに必ず指定する。
+
+- 指定可能な値: `haiku` / `sonnet` / `opus` / `fable`（またはフルモデルID）
+- **tech-lead はフェーズ別にモデルが分かれる**（Phase 3 設計→設計モデル、Phase 5 実装→実装モデル）
+- モデル列が未記載のロールは `model` を指定しない（メイン会話のモデルを継承）
+- Codex委譲モードの場合、このルールは適用されない（`codex -q` を使用）
+
 ## Phase 1: 分析実行
 
 ### モデル委譲チェック
@@ -9,6 +18,7 @@
 
 ### 通常モード
 Agent tool で `subagent_type: general-purpose` のサブエージェントを起動する。
+`model`: TEAM.md の analyst のモデル（既定: sonnet）
 
 **プロンプトに含める内容:**
 - `.agents/analyst/CLAUDE.md` の役割定義
@@ -37,6 +47,7 @@ Bash tool で `codex -q` を実行する。
 ## Phase 2: 分析レビュー
 
 Agent tool で devils-advocate サブエージェントを起動する。
+`model`: TEAM.md の devils-advocate のモデル（既定: fable）
 
 **プロンプトに含める内容:**
 - `.agents/devils-advocate/CLAUDE.md` の役割定義
@@ -60,12 +71,12 @@ Agent tool で devils-advocate サブエージェントを起動する。
 
 **1つのメッセージ内で2つの Agent tool 呼び出しを同時に行う。**
 
-**Agent 1: ux-designer**
+**Agent 1: ux-designer**（`model`: TEAM.md の ux-designer のモデル。既定: sonnet）
 - `.agents/ux-designer/CLAUDE.md` の役割定義
 - `.claude/skills/koumei-design-ux/SKILL.md` の手順セクションの内容
 - 対象タスク番号と指示書のパス
 
-**Agent 2: tech-lead**
+**Agent 2: tech-lead**（`model`: TEAM.md の tech-lead **設計モデル**。既定: fable）
 - `.agents/tech-lead/CLAUDE.md` の役割定義
 - `.claude/skills/koumei-design-tech/SKILL.md` の手順セクションの内容
 - 対象タスク番号と指示書のパス
@@ -108,6 +119,7 @@ Phase 2 と同様に devils-advocate サブエージェントを起動する。
 
 ### 通常モード
 Agent tool で tech-lead サブエージェントを起動する。
+`model`: TEAM.md の tech-lead **実装モデル**（既定: opus）
 
 **プロンプトに含める内容:**
 - `.agents/tech-lead/CLAUDE.md` の役割定義

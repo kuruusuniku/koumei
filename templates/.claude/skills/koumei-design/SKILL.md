@@ -43,6 +43,7 @@ Task toolを使って、以下の2つのサブエージェントを**同時に�
 
 #### サブエージェント1: UXデザイン担当
 - `subagent_type`: `general-purpose`
+- `model`: `.agents/TEAM.md`「チーム構成」の ux-designer のモデル列を指定（既定: sonnet）
 - プロンプトに含める内容:
   - 「あなたはux-designer（UXデザイン担当）として行動する」
   - `.agents/ux-designer/CLAUDE.md` の内容（役割・デザイン原則）
@@ -54,6 +55,7 @@ Task toolを使って、以下の2つのサブエージェントを**同時に�
 
 #### サブエージェント2: 技術設計担当
 - `subagent_type`: `general-purpose`
+- `model`: `.agents/TEAM.md`「チーム構成」の tech-lead **設計モデル**を指定（既定: fable）
 - プロンプトに含める内容:
   - 「あなたはtech-lead（技術アーキテクチャ&実装担当）として行動する」
   - `.agents/tech-lead/CLAUDE.md` の内容（役割・対象プロジェクト）

@@ -29,8 +29,18 @@
 | **最高指揮者** | 諸葛孔明 (koumei) | `.agents/koumei/` | 全体統括、タスク分割、指示出し、最終判断 | sonnet |
 | **システム分析担当** | analyst | `.agents/analyst/` | 既存コード・API・DB分析 | sonnet |
 | **UXデザイン担当** | ux-designer | `.agents/ux-designer/` | UI設計、画面遷移設計、レスポンシブ対応 | sonnet |
-| **技術アーキテクチャ&実装担当** | tech-lead | `.agents/tech-lead/` | 技術設計・実装 | **opus** |
-| **悪魔の代弁者** | devils-advocate | `.agents/devils-advocate/` | 全成果物のレビュー・問題提起 | **opus** |
+| **技術アーキテクチャ&実装担当** | tech-lead | `.agents/tech-lead/` | 技術設計・実装 | **fable**（設計）/ **opus**（実装） |
+| **悪魔の代弁者** | devils-advocate | `.agents/devils-advocate/` | 全成果物のレビュー・問題提起 | **fable** |
+
+#### モデル指定の仕組み
+
+オーケストレーター（`/koumei-start` の各Phase、`/koumei-design`、`/koumei-review`）は、サブエージェント起動時に上記テーブルの「モデル」列を Agent tool の `model` パラメータに指定する。モデル列を書き換えるだけで、全スキルの起動モデルが変わる。
+
+- 指定可能な値: `haiku` / `sonnet` / `opus` / `fable`（またはフルモデルID）
+- **配置の原則**: 高単価モデルは「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に置く
+  - **devils-advocate = fable**: レビューVERDICTがフロー全体（差し戻しループ）を制御する品質ゲートであり、誤判定のコストが最も高い
+  - **tech-lead 設計 = fable / 実装 = opus**: 設計ミスは実装で増幅される。実装はトークン量が多いため opus（または Codex 委譲）
+  - **koumei / analyst / ux-designer = sonnet**: オーケストレーションは機械的、分析は読み取り中心
 
 ### カスタムロール（オプション）
 

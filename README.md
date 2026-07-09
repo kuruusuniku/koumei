@@ -35,8 +35,10 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 | 最高指揮者 | koumei | 全体統括、タスク分割、指示出し、最終判断 | sonnet |
 | システム分析 | analyst | 既存コード・API・DB分析 | sonnet |
 | UXデザイン | ux-designer | UI設計、画面遷移設計、レスポンシブ対応 | sonnet |
-| 技術リード | tech-lead | 技術設計・実装 | opus |
-| レビュアー | devils-advocate | 全成果物のレビュー・問題提起 | opus |
+| 技術リード | tech-lead | 技術設計・実装 | fable（設計）/ opus（実装） |
+| レビュアー | devils-advocate | 全成果物のレビュー・問題提起 | fable |
+
+**モデル戦略**: 高単価・高知能モデル（fable）は「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に配置する。レビューVERDICTはフロー全体を制御する品質ゲートのため devils-advocate に、設計ミスは実装で増幅されるため tech-lead の設計フェーズに fable を使い、トークン量の多い実装は opus（または Codex 委譲）で実行する。モデルは `TEAM.md` のチーム構成テーブルの「モデル」列で一元管理され、オーケストレーターがサブエージェント起動時に `model` パラメータとして渡す。
 
 ## Skills（スラッシュコマンド）
 

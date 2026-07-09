@@ -46,6 +46,7 @@ disable-model-invocation: true
 
 ### 3) レビュー実行
 devils-advocateエージェントにレビューを委譲する。
+起動時、`.agents/TEAM.md`「チーム構成」の devils-advocate のモデル列を Agent tool の `model` パラメータに指定する（既定: fable）。
 
 ### 4) レビュー結果保存
 命名規則に従ったファイル名で保存。
