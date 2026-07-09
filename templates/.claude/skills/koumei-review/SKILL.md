@@ -44,9 +44,21 @@ disable-model-invocation: true
 ### 2) レビューフェーズ自動判定
 上記「判定ロジック」に従いレビュー種別を決定し、ユーザに表示。
 
-### 3) レビュー実行
-devils-advocateエージェントにレビューを委譲する。
-起動時、`.agents/TEAM.md`「チーム構成」の devils-advocate のモデル列を Agent tool の `model` パラメータに指定する（既定: fable）。
+### 3) レビューモデル選択・実行
+
+TEAM.md の「レビューモデル設定」の `review_mode` に応じてモデルを選択する。
+
+```
+【default】  codex → claude
+【economy】  codex → lmstudio → claude
+【claude-only】 claude のみ
+```
+
+選択されたモデルをユーザーに表示: 「レビューモデル: {codex / lmstudio / claude ({モデル名})}」
+
+claude で実行する場合は devils-advocate エージェントに委譲し、`.agents/TEAM.md`「チーム構成」の devils-advocate のモデル列を Agent tool の `model` パラメータに指定する（既定: fable）。
+
+モデル別の実行手順は [docs/review-models.md](docs/review-models.md) を参照。
 
 ### 4) レビュー結果保存
 命名規則に従ったファイル名で保存。

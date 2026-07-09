@@ -96,6 +96,27 @@
 - **ux-designer** — 創造的なUX判断が多い
 - **devils-advocate** — 品質ゲートは信頼性重視
 
+### レビューモデル設定
+
+レビュー（devils-advocate）の実行モデルを設定する。
+上から順に優先度が高い。利用可能な最優先モデルが使用される。
+
+| 優先度 | モデル | 呼び出し方法 | 条件 |
+|--------|--------|------------|------|
+| 1 | codex | `/codex:review --wait` | codex スキルが利用可能 |
+| 2 | lmstudio | `mcp__lmstudio-mcp__chat_completion` | 節約モード時 (`review_mode: economy`) |
+| 3 | claude | Agent ツール（モデルは「チーム構成」の devils-advocate 列。既定: fable） | 常に利用可能 |
+
+#### レビューモード
+
+```
+review_mode: default
+```
+
+- `default` — 優先度順（codex → claude）
+- `economy` — lmstudio-mcp を優先（codex → lmstudio → claude）
+- `claude-only` — 常に Claude（devils-advocate のモデル列。既定: fable）を使用
+
 ### セカンドオピニオン設定（オプション）
 
 Devil's Advocateレビュー時に、Claude以外のモデルによるセカンドオピニオンを取得できます。
