@@ -113,6 +113,7 @@ Agent tool で tech-lead サブエージェントを起動する。
 - `.agents/tech-lead/CLAUDE.md` の役割定義
 - `.claude/skills/koumei-implement/SKILL.md` の手順セクションの内容
 - 対象タスク番号と指示書のパス
+- 軽微修正（クイック）の場合: 設計書が存在しないため、タスク定義と指示書を実装の前提とすること
 
 ### Codex委譲モード
 Bash tool で `codex -q` を実行する。

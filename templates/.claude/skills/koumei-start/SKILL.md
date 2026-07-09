@@ -26,7 +26,7 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 詳細は [docs/rules.md](docs/rules.md) を参照。要点:
 
 - **レビュー（devils-advocate）は必ず独立した別エージェントで実行すること**（統合禁止）
-- タスク種別（バグ修正小/中/機能追加）でフェーズスキップあり
+- タスク種別（軽微修正/バグ修正小/中/機能追加）でフェーズスキップあり。ただし **Phase 6（コードレビュー）はいかなる種別でもスキップ禁止**
 
 ---
 
@@ -97,7 +97,7 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 | 6 | コードレビュー | devils-advocate | 実装コードの検分（APPROVED/REVISE） |
 | 7 | PR作成 | koumei | ブランチpush + PR作成 |
 
-**タスク種別によるスキップ**: バグ修正（小）は Phase 3,4 をスキップ。詳細は [docs/rules.md](docs/rules.md) 参照。
+**タスク種別によるスキップ**: 軽微修正（クイック）は Phase 1〜4、バグ修正（小）は Phase 3,4 をスキップ。Phase 6 は常に必須。詳細は [docs/rules.md](docs/rules.md) 参照。
 
 ---
 
