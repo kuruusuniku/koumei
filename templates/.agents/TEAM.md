@@ -49,11 +49,14 @@
 
 | モデル名 | 呼び出し方法 | 備考 |
 |---------|------------|------|
-| codex | `codex -q "{プロンプト}"` | OpenAI Codex CLI |
+| codex | `codex exec "{プロンプト}"` | OpenAI Codex CLI。モデルは `~/.codex/config.toml` の `model` に従う |
+| gpt-5.6-sol | `codex exec -m gpt-5.6-sol "{プロンプト}"` | codex CLI 経由でモデルを固定する例。`-m {モデルID}` で任意のモデルを登録できる |
 | grok | `grok -p "{プロンプト}"` | xAI Grok CLI（grok-4.5 等）。インストール済みの場合のみ |
 | gemini | `gemini "{プロンプト}"` | Google Gemini CLI |
 
-利用可否は `command -v {モデル名}` で確認し、不可の場合は Claude にフォールバックして報告する。
+**サンドボックスの注意**: codex CLI の既定サンドボックスは読み取り専用。**ファイル書き込みを伴う委譲（分析成果物の保存・実装）では `-s workspace-write --full-auto` を追加する**こと（例: `codex exec -s workspace-write --full-auto "{プロンプト}"`）。レビュー・セカンドオピニオンのように標準出力を呼び出し元が受け取って保存する用途では不要。
+
+利用可否は CLI 本体の存在（例: `command -v codex`）で確認し、不可の場合は Claude にフォールバックして報告する。
 
 ### カスタムロール（オプション）
 
@@ -97,8 +100,8 @@
 <!--
 | 役割 | 委譲先 | 呼び出し方法 | 対象フェーズ |
 |------|--------|------------|------------|
-| analyst | codex | `codex -q "{プロンプト}"` | 分析（/koumei-analyze） |
-| tech-lead | codex | `codex -q "{プロンプト}"` | 実装（/koumei-implement） |
+| analyst | codex | `codex exec -s workspace-write --full-auto "{プロンプト}"` | 分析（/koumei-analyze） |
+| tech-lead | codex | `codex exec -s workspace-write --full-auto "{プロンプト}"` | 実装（/koumei-implement） |
 -->
 
 **有効化方法**: 上記テーブルのコメントを外し、委譲するロールを記載してください。
@@ -142,7 +145,7 @@ Devil's Advocateレビュー時に、Claude以外のモデルによるセカン�
 <!--
 | モデル名 | プロバイダー | 呼び出し方法 |
 |---------|------------|------------|
-| codex | OpenAI | `codex -q "{プロンプト}"` |
+| codex | OpenAI | `codex exec "{プロンプト}"` |
 | grok | xAI | `grok -p "{プロンプト}"` |
 | gemini | Google | `gemini "{プロンプト}"` |
 -->

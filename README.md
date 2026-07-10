@@ -185,8 +185,8 @@ cp -r templates/hooks /path/to/your/project/   # Hooks を使う場合
 ```markdown
 | 役割 | 委譲先 | 呼び出し方法 | 対象フェーズ |
 |------|--------|------------|------------|
-| analyst | codex | `codex -q "{プロンプト}"` | 分析（/koumei-analyze） |
-| tech-lead | codex | `codex -q "{プロンプト}"` | 実装（/koumei-implement） |
+| analyst | codex | `codex exec -s workspace-write --full-auto "{プロンプト}"` | 分析（/koumei-analyze） |
+| tech-lead | codex | `codex exec -s workspace-write --full-auto "{プロンプト}"` | 実装（/koumei-implement） |
 ```
 
 **委譲推奨:**
@@ -213,7 +213,7 @@ cp -r templates/hooks /path/to/your/project/   # Hooks を使う場合
 - claude で実行する場合は devils-advocate エージェントに委譲する（モデルはチーム構成の「モデル」列。既定: fable）
 - **遅い場合の自動切り替え**: `review_timeout`（秒。既定: 600）を超えたら中断し、次の優先モデルへ自動フォールバックする。フォールバック理由はユーザー報告とレビュー結果に記録される
 - **一時切り替え**: `/koumei-review --model claude` のように指定すると、TEAM.md を編集せずそのレビューだけモデルを強制できる
-- **外部CLIモデル**: `TEAM.md`「外部CLIモデル定義」に登録した CLI（grok / codex / gemini 等）は、チーム構成のモデル列・`--model` フラグ・レビューモデル優先度のいずれでも指定できる。CLI が未インストールなら Claude にフォールバックする
+- **外部CLIモデル**: `TEAM.md`「外部CLIモデル定義」に登録した CLI（grok / codex / gemini 等）は、チーム構成のモデル列・`--model` フラグ・レビューモデル優先度のいずれでも指定できる。CLI が未インストールなら Claude にフォールバックする。`codex exec -m gpt-5.6-sol` のようにモデルを固定したエントリ（例: `gpt-5.6-sol`）も登録可能
 
 ### セカンドオピニオン（クロスモデルレビュー）
 
@@ -224,7 +224,7 @@ Devil's Advocateレビュー時に、Claude以外のモデル（Codex, Gemini等
 ```markdown
 | モデル名 | プロバイダー | 呼び出し方法 |
 |---------|------------|------------|
-| codex | OpenAI | `codex -q "{プロンプト}"` |
+| codex | OpenAI | `codex exec "{プロンプト}"` |
 | gemini | Google | `gemini "{プロンプト}"` |
 ```
 

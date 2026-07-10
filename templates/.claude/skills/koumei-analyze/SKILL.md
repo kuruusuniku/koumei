@@ -29,7 +29,7 @@ allowed-tools: Read Glob Grep Write Bash Edit
    - 「成果物を `.agents/analyst/deliverables/task-{番号}-analysis.md` に保存すること」
    - 「完了報告を `.agents/koumei/reports/task-{番号}-analyst-report.md` に保存すること」
    - 以下「手順」セクションの 3〜6 の内容
-3. Bash ツールで委譲先を実行する: `codex -q "{プロンプト}"`
+3. Bash ツールで委譲先を実行する。呼び出し方法は TEAM.md の委譲設定テーブルに従う（codex の場合: `codex exec -s workspace-write --full-auto "{プロンプト}"`。成果物ファイルの書き込みがあるため workspace-write 必須）
 4. 実行完了後、成果物ファイルの存在を確認し、結果をユーザーに報告する
 5. 次のステップを案内して終了する
 

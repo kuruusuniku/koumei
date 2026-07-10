@@ -35,7 +35,7 @@ allowed-tools: Read Glob Grep Write Edit Bash
    - 「以下の前提確認〜実装手順に従って実装すること」
    - 以下「前提確認」「実装手順」セクションの内容
    - 「完了報告を `.agents/koumei/reports/task-{番号}-tech-lead-implement-report.md` に保存すること」
-3. Bash ツールで委譲先を実行する: `codex -q "{プロンプト}"`
+3. Bash ツールで委譲先を実行する。呼び出し方法は TEAM.md の委譲設定テーブルに従う（codex の場合: `codex exec -s workspace-write --full-auto "{プロンプト}"`。コード書き込みがあるため workspace-write 必須）
 4. 実行完了後、ビルド確認を行い、結果をユーザーに報告する
 5. 次のステップを案内して終了する
 
