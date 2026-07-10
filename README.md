@@ -39,7 +39,7 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 | レビュアー | devils-advocate | 全成果物のレビュー・問題提起 | fable |
 | タスク並列実行（オプション） | task-manager | マルチタスク時に1タスクのPhase 1〜7をworktree内で完遂 | inherit |
 
-**モデル戦略**: 高単価・高知能モデル（fable）は「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に配置する。レビューVERDICTはフロー全体を制御する品質ゲートのため devils-advocate に、設計ミスは実装で増幅されるため tech-lead の設計フェーズに fable を使い、トークン量の多い実装は opus（または Codex 委譲）で実行する。モデルは `TEAM.md` のチーム構成テーブルの「モデル」列で一元管理され、オーケストレーターがサブエージェント起動時に `model` パラメータとして渡す。
+**モデル戦略**: 高単価・高知能モデル（fable）は「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に配置する。レビューVERDICTはフロー全体を制御する品質ゲートのため devils-advocate に、設計ミスは実装で増幅されるため tech-lead の設計フェーズに fable を使い、トークン量の多い実装は opus（または Codex 委譲）で実行する。モデルは `TEAM.md` のチーム構成テーブルの「モデル」列で一元管理され、オーケストレーターがサブエージェント起動時に `model` パラメータとして渡す。なお `/koumei-review` は既定で codex を優先するため（「レビューモデル選択」参照）、fable が使われるのは Claude でレビューを実行する経路。
 
 ## Skills（スラッシュコマンド）
 
@@ -50,7 +50,7 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 | `/koumei-start {要件}` | koumei | タスク定義＋各担当への指示書を一括作成（全自動/`--manual` 順次/`--multi` マルチタスク） |
 | `/koumei-analyze [タスクID]` | analyst | 既存コード・スキーマの分析 |
 | `/koumei-design [タスクID]` | ux-designer + tech-lead | UX設計と技術設計を**並列実行** |
-| `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー |
+| `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー（`--security` / `--second-opinion` / `--model` で拡張） |
 | `/koumei-implement [フェーズ番号]` | tech-lead | レビュー通過後、実装を開始 |
 | `/koumei-status` | koumei | タスク進捗の確認・次アクション提案 |
 
@@ -109,17 +109,20 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 
 ## セットアップ
 
-### 方法1: セットアップスクリプト
+### 方法1: セットアップスクリプト（推奨）
 
 ```bash
 bash scripts/setup.sh /path/to/your/project
 ```
+
+`.agents` / `.claude/skills` のコピーに加え、hooks/ のコピーと `.claude/settings.json` のマージ（既存設定があれば hooks のみ追加）まで自動で行う。
 
 ### 方法2: 手動コピー
 
 ```bash
 cp -r templates/.agents /path/to/your/project/
 cp -r templates/.claude /path/to/your/project/
+cp -r templates/hooks /path/to/your/project/   # Hooks を使う場合
 ```
 
 ### カスタマイズ
@@ -182,8 +185,8 @@ cp -r templates/.claude /path/to/your/project/
 ```markdown
 | 役割 | 委譲先 | 呼び出し方法 | 対象フェーズ |
 |------|--------|------------|------------|
-| analyst | codex | `codex -q "{プロンプト}"` | 分析（/koumei-analyze） |
-| tech-lead | codex | `codex -q "{プロンプト}"` | 実装（/koumei-implement） |
+| analyst | codex | `codex exec -s workspace-write --full-auto "{プロンプト}"` | 分析（/koumei-analyze） |
+| tech-lead | codex | `codex exec -s workspace-write --full-auto "{プロンプト}"` | 実装（/koumei-implement） |
 ```
 
 **委譲推奨:**
@@ -195,7 +198,22 @@ cp -r templates/.claude /path/to/your/project/
 - **ux-designer** — 創造的UX判断が多い
 - **devils-advocate** — 品質ゲートは信頼性重視
 
-委譲先で実装したコードも、次の `/koumei-review` で必ずClaude（devils-advocate）がレビューするため品質は担保される。
+委譲先で実装したコードも、次の `/koumei-review` の独立レビューを必ず通るため品質は担保される（レビュー実行モデルは「レビューモデル選択」に従う）。
+
+### レビューモデル選択（codex優先・自動フォールバック）
+
+`/koumei-review` は `TEAM.md` の「レビューモデル設定」（`review_mode`）に従い、レビューを実行するモデルを選択する。
+
+| モード | 優先順位 |
+|--------|---------|
+| `default` | codex → claude |
+| `economy` | codex → lmstudio → claude |
+| `claude-only` | claude のみ |
+
+- claude で実行する場合は devils-advocate エージェントに委譲する（モデルはチーム構成の「モデル」列。既定: fable）
+- **遅い場合の自動切り替え**: `review_timeout`（秒。既定: 600）を超えたら中断し、次の優先モデルへ自動フォールバックする。フォールバック理由はユーザー報告とレビュー結果に記録される
+- **一時切り替え**: `/koumei-review --model claude` のように指定すると、TEAM.md を編集せずそのレビューだけモデルを強制できる
+- **外部CLIモデル**: `TEAM.md`「外部CLIモデル定義」に登録した CLI（grok / codex / gemini 等）は、チーム構成のモデル列・`--model` フラグ・レビューモデル優先度のいずれでも指定できる。CLI が未インストールなら Claude にフォールバックする。`codex exec -m gpt-5.6-sol` のようにモデルを固定したエントリ（例: `gpt-5.6-sol`）も登録可能
 
 ### セカンドオピニオン（クロスモデルレビュー）
 
@@ -206,17 +224,29 @@ Devil's Advocateレビュー時に、Claude以外のモデル（Codex, Gemini等
 ```markdown
 | モデル名 | プロバイダー | 呼び出し方法 |
 |---------|------------|------------|
-| codex | OpenAI | `codex -q "{プロンプト}"` |
+| codex | OpenAI | `codex exec "{プロンプト}"` |
 | gemini | Google | `gemini "{プロンプト}"` |
 ```
 
 未設定の場合は通常のClaude単独レビューとして動作する。
+
+### Claude Code Hooks（自動化テンプレート）
+
+`templates/hooks/` と `templates/.claude/settings.json` に、展開先プロジェクト用の Hooks 一式を用意。`setup.sh` が hooks/ のコピーと settings.json のマージ（要 jq）まで自動で行う。
+
+| フック | タイミング | 内容 |
+|--------|-----------|------|
+| `quality-gate.sh` | PreToolUse (Write/Edit) | `TEAM.md` 等の重要ファイルの直接編集をブロック |
+| `log-operation.sh` | PostToolUse (全ツール) | 全操作を `.agents/logs/YYYY-MM-DD.jsonl` に記録 |
+| `auto-format.sh` | PostToolUse (Write/Edit) | prettier があれば対象ファイルを自動フォーマット（.md は除外） |
+| `notify-phase.sh` | PostToolUse (Write) | 成果物・レビュー・完了報告の書き込みを検知して macOS 通知 |
 
 ## ディレクトリ構造
 
 ```
 your-project/
 ├── .claude/
+│   ├── settings.json                   # Hooks 設定（setup.sh がマージ）
 │   └── skills/                         # スキル定義
 │       ├── koumei-start/
 │       │   ├── SKILL.md
@@ -228,7 +258,8 @@ your-project/
 │       ├── koumei-design-tech/SKILL.md
 │       ├── koumei-review/
 │       │   ├── SKILL.md
-│       │   └── docs/extended-modes.md  # セキュリティ監査 / セカンドオピニオン
+│       │   └── docs/                   # extended-modes（セキュリティ監査/セカンド
+│       │                               #  オピニオン）/ review-models（モデル選択）
 │       ├── koumei-implement/SKILL.md
 │       └── koumei-status/SKILL.md
 ├── .agents/
@@ -259,6 +290,11 @@ your-project/
 │       ├── api-designer/CLAUDE.md
 │       ├── data-engineer/CLAUDE.md
 │       └── infra-architect/CLAUDE.md
+├── hooks/                              # Claude Code Hooks
+│   ├── quality-gate.sh                 # 重要ファイルの直接編集ブロック
+│   ├── log-operation.sh                # 全操作のログ記録
+│   ├── auto-format.sh                  # 保存時の自動フォーマット
+│   └── notify-phase.sh                 # フェーズ完了の通知
 ```
 
 ## License

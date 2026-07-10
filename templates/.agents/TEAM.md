@@ -36,11 +36,27 @@
 
 オーケストレーター（`/koumei-start` の各Phase、`/koumei-design`、`/koumei-review`）は、サブエージェント起動時に上記テーブルの「モデル」列を Agent tool の `model` パラメータに指定する。モデル列を書き換えるだけで、全スキルの起動モデルが変わる。
 
-- 指定可能な値: `haiku` / `sonnet` / `opus` / `fable`（またはフルモデルID）
+- 指定可能な値: `haiku` / `sonnet` / `opus` / `fable`（またはフルモデルID）、および下記「外部CLIモデル定義」に登録した外部モデル名（`grok` / `codex` 等）
+- **外部CLIモデルを指定した場合**: オーケストレーターは Agent tool ではなく Bash 経由でその CLI を呼び出す。CLI が利用不可（`command -v` で不在）の場合は Claude の既定モデルにフォールバックし、その旨を報告する
 - **配置の原則**: 高単価モデルは「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に置く
   - **devils-advocate = fable**: レビューVERDICTがフロー全体（差し戻しループ）を制御する品質ゲートであり、誤判定のコストが最も高い
   - **tech-lead 設計 = fable / 実装 = opus**: 設計ミスは実装で増幅される。実装はトークン量が多いため opus（または Codex 委譲）
   - **koumei / analyst / ux-designer = sonnet**: オーケストレーションは機械的、分析は読み取り中心
+
+#### 外部CLIモデル定義
+
+モデル列・レビューモデル・セカンドオピニオンで外部CLIモデルを使う場合の呼び出し方法。使用する CLI の仕様に合わせて編集してください。
+
+| モデル名 | 呼び出し方法 | 備考 |
+|---------|------------|------|
+| codex | `codex exec "{プロンプト}"` | OpenAI Codex CLI。モデルは `~/.codex/config.toml` の `model` に従う |
+| gpt-5.6-sol | `codex exec -m gpt-5.6-sol "{プロンプト}"` | codex CLI 経由でモデルを固定する例。`-m {モデルID}` で任意のモデルを登録できる |
+| grok | `grok -p "{プロンプト}"` | xAI Grok CLI（grok-4.5 等）。インストール済みの場合のみ |
+| gemini | `gemini "{プロンプト}"` | Google Gemini CLI |
+
+**サンドボックスの注意**: codex CLI の既定サンドボックスは読み取り専用。**ファイル書き込みを伴う委譲（分析成果物の保存・実装）では `-s workspace-write --full-auto` を追加する**こと（例: `codex exec -s workspace-write --full-auto "{プロンプト}"`）。レビュー・セカンドオピニオンのように標準出力を呼び出し元が受け取って保存する用途では不要。
+
+利用可否は CLI 本体の存在（例: `command -v codex`）で確認し、不可の場合は Claude にフォールバックして報告する。
 
 ### カスタムロール（オプション）
 
@@ -84,8 +100,8 @@
 <!--
 | 役割 | 委譲先 | 呼び出し方法 | 対象フェーズ |
 |------|--------|------------|------------|
-| analyst | codex | `codex -q "{プロンプト}"` | 分析（/koumei-analyze） |
-| tech-lead | codex | `codex -q "{プロンプト}"` | 実装（/koumei-implement） |
+| analyst | codex | `codex exec -s workspace-write --full-auto "{プロンプト}"` | 分析（/koumei-analyze） |
+| tech-lead | codex | `codex exec -s workspace-write --full-auto "{プロンプト}"` | 実装（/koumei-implement） |
 -->
 
 **有効化方法**: 上記テーブルのコメントを外し、委譲するロールを記載してください。
@@ -106,16 +122,20 @@
 | 1 | codex | `/codex:review --wait` | codex スキルが利用可能 |
 | 2 | lmstudio | `mcp__lmstudio-mcp__chat_completion` | 節約モード時 (`review_mode: economy`) |
 | 3 | claude | Agent ツール（モデルは「チーム構成」の devils-advocate 列。既定: fable） | 常に利用可能 |
+| - | grok | grok CLI（「外部CLIモデル定義」参照） | `--model grok` 指定時。常用したい場合はこの表の優先度に組み込む |
 
 #### レビューモード
 
 ```
 review_mode: default
+review_timeout: 600
 ```
 
 - `default` — 優先度順（codex → claude）
 - `economy` — lmstudio-mcp を優先（codex → lmstudio → claude）
 - `claude-only` — 常に Claude（devils-advocate のモデル列。既定: fable）を使用
+- `review_timeout` — codex / lmstudio レビューの制限時間（秒）。超過したら中断し、次の優先モデルにフォールバックする
+- 一時的な切り替えは `/koumei-review --model claude` のように `--model` フラグで指定できる（TEAM.md の編集不要）
 
 ### セカンドオピニオン設定（オプション）
 
@@ -125,7 +145,8 @@ Devil's Advocateレビュー時に、Claude以外のモデルによるセカン�
 <!--
 | モデル名 | プロバイダー | 呼び出し方法 |
 |---------|------------|------------|
-| codex | OpenAI | `codex -q "{プロンプト}"` |
+| codex | OpenAI | `codex exec "{プロンプト}"` |
+| grok | xAI | `grok -p "{プロンプト}"` |
 | gemini | Google | `gemini "{プロンプト}"` |
 -->
 

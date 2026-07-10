@@ -1,7 +1,7 @@
 ---
 name: koumei-review
 description: 成果物またはコードのレビューを実行する。レビューフェーズを自動判定し、devils-advocateエージェントにレビューを委譲する。
-argument-hint: "[タスクID] [--security] [--second-opinion]"
+argument-hint: "[タスクID] [--security] [--second-opinion] [--model codex|lmstudio|grok|claude]"
 disable-model-invocation: true
 ---
 
@@ -37,6 +37,7 @@ disable-model-invocation: true
 - `$ARGUMENTS` に `second-opinion` / `--second-opinion` → セカンドオピニオンモード
 - 両方指定 → 両モード同時実行
 - どちらもなし → 通常レビュー
+- `$ARGUMENTS` に `--model {codex|lmstudio|grok|claude}` → レビューモデルの一時強制指定（TEAM.md の `review_mode` より優先。TEAM.md の編集は不要）。grok 等の外部CLIモデルは TEAM.md「外部CLIモデル定義」に登録されたものを指定できる
 
 ### 1) タスクID取得
 引数からタスクIDを取得。未指定の場合はユーザに確認。
@@ -47,6 +48,7 @@ disable-model-invocation: true
 ### 3) レビューモデル選択・実行
 
 TEAM.md の「レビューモデル設定」の `review_mode` に応じてモデルを選択する。
+`--model` フラグが指定されている場合はそれを最優先する（指定モデルが利用不可なら claude にフォールバック）。
 
 ```
 【default】  codex → claude
@@ -54,7 +56,9 @@ TEAM.md の「レビューモデル設定」の `review_mode` に応じてモデ
 【claude-only】 claude のみ
 ```
 
-選択されたモデルをユーザーに表示: 「レビューモデル: {codex / lmstudio / claude ({モデル名})}」
+codex / lmstudio の実行には TEAM.md の `review_timeout`（秒。既定: 600）を制限時間として適用し、超過した場合は中断して次の優先モデルにフォールバックする。
+
+選択されたモデルをユーザーに表示: 「レビューモデル: {codex / lmstudio / claude ({モデル名})}」。フォールバックが発生した場合は理由（タイムアウト・利用不可等）も添える。
 
 claude で実行する場合は devils-advocate エージェントに委譲し、`.agents/TEAM.md`「チーム構成」の devils-advocate のモデル列を Agent tool の `model` パラメータに指定する（既定: fable）。
 
@@ -62,6 +66,12 @@ claude で実行する場合は devils-advocate エージェントに委譲し�
 
 ### 4) レビュー結果保存
 命名規則に従ったファイル名で保存。
+
+## レビューアの独立性（絶対ルール）
+
+- レビューは必ず**作業者と別の独立したコンテキスト**（独立エージェント、または codex 等の外部モデル）で実行する。実装・設計・分析を行った本人がペルソナを切り替えて自己レビューすることは、いかなる場合も禁止
+- サブエージェント内から実行する場合もネスト起動が可能（Claude Code v2.1.172 以降、最大5階層）。「起動手段が無い」と判断せず、まず Agent tool を実際に試みること
+- Agent tool の呼び出しが実際に失敗した場合は codex（Bash 経由）で独立レビューする。それも不可能な場合は自己レビューで代替せず、**その旨を報告して停止**する
 
 ## 拡張モード
 

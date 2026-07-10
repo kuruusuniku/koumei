@@ -7,7 +7,8 @@
 - 指定可能な値: `haiku` / `sonnet` / `opus` / `fable`（またはフルモデルID）
 - **tech-lead はフェーズ別にモデルが分かれる**（Phase 3 設計→設計モデル、Phase 5 実装→実装モデル）
 - モデル列が未記載のロールは `model` を指定しない（メイン会話のモデルを継承）
-- Codex委譲モードの場合、このルールは適用されない（`codex -q` を使用）
+- **モデル列が外部CLIモデル（`grok` / `codex` 等）の場合**: Agent tool ではなく Bash 経由でその CLI を呼び出す（呼び出し方法は TEAM.md「外部CLIモデル定義」参照）。プロンプトには通常モードと同じ内容＋成果物・完了報告の保存先パスを含め、実行後は成果物ファイルの存在を確認する。CLI が利用不可なら Claude の既定モデルにフォールバックして報告する
+- Codex委譲モードの場合、このルールは適用されない（`codex exec` を使用。ファイル書き込みを伴うため `-s workspace-write --full-auto` 必須）
 
 ## Phase 1: 分析実行
 
@@ -26,7 +27,7 @@ Agent tool で `subagent_type: general-purpose` のサブエージェントを�
 - 対象タスク番号と指示書のパス
 
 ### Codex委譲モード
-Bash tool で `codex -q` を実行する。
+Bash tool で `codex exec -s workspace-write --full-auto "{プロンプト}"` を実行する（成果物ファイルの書き込みがあるため workspace-write 必須。TEAM.md の呼び出し方法に `-m` があればそれに従う）。
 
 **プロンプトに含める内容（通常モードと同一）:**
 - `.agents/analyst/CLAUDE.md` の役割定義
@@ -128,7 +129,7 @@ Agent tool で tech-lead サブエージェントを起動する。
 - 軽微修正（クイック）の場合: 設計書が存在しないため、タスク定義と指示書を実装の前提とすること
 
 ### Codex委譲モード
-Bash tool で `codex -q` を実行する。
+Bash tool で `codex exec -s workspace-write --full-auto "{プロンプト}"` を実行する（コード書き込みがあるため workspace-write 必須。TEAM.md の呼び出し方法に `-m` があればそれに従う）。
 
 **プロンプトに含める内容:**
 - `.agents/tech-lead/CLAUDE.md` の役割定義
