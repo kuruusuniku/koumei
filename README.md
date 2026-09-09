@@ -90,6 +90,8 @@ grok --prompt-file /tmp/role.md --always-approve
 
 確定後は `.agents/koumei/tasks/grill-*.md` に結論（ゴール・やらないこと・要件対応表・検証方法）を残し、必要ならそのまま `/koumei-start` に渡す。
 
+オフにしたいときは `.agents/TEAM.md` の `grill_mode: off`（既定は `on`）。off のとき `/koumei-start` は軍議を提案せず `--grill` も無視する。明示の `/koumei-grill` だけは実行できる。
+
 ### 個別実行（差し戻し時）
 
 | コマンド | 担当 | 用途 |

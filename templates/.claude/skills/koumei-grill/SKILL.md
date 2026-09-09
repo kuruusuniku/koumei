@@ -13,6 +13,14 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 出典: [mattpocock/skills `grill-me` / `grilling`](https://www.skills.sh/mattpocock/skills/grill-me) の面接手法を Koumei 向けに取り込んだモード。
 目的は褒め合いではなく、**要求とのズレ防止**と**ゴールの共有確認**。
 
+
+## grill_mode（TEAM.md）
+
+`.agents/TEAM.md` の `grill_mode` を読む:
+
+- **`on`（既定）**: 通常どおり軍議を実行する
+- **`off`**: `/koumei-start --grill` からは呼ばれない（start 側が無視）。**本スキルを直接叩いた場合は実行する**（明示オプトイン）。開始時に「TEAM は off だが明示実行」と一言触れる
+
 ## いつ使うか
 
 - 実装が要求とズレやすい / ゴールが曖昧なとき

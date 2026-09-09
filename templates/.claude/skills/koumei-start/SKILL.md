@@ -36,13 +36,15 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 
 `$ARGUMENTS` を確認し、実行モードを決定する:
 
-0. **`--grill` が含まれる場合** → 先に軍議（Grill）モード。`.claude/skills/koumei-grill/SKILL.md` の手順で要件・ゴール・やらないことを詰め、**共有理解がユーザー確定するまで Phase 0 に進まない**。確定後、結論を要件として Phase 0 に進む（`--manual` / `--multi` が併記されていればそのモードで継続）。実装ズレ防止とゴール確認が目的。
+0. **先に `.agents/TEAM.md` の `grill_mode` を確認**する（無記載は `on`）。
+   - **`grill_mode: off`** のとき: 軍議は行わない。`--grill` が付いていても**無視**し、その旨を一言報告して通常モードへ。モード選択でも軍議選択肢を出さない。明示的に軍議したい場合はユーザーに `grill_mode: on` にするか `/koumei-grill` 単体を案内する。
+   - **`grill_mode: on`** かつ **`--grill` が含まれる場合** → 先に軍議（Grill）モード。`.claude/skills/koumei-grill/SKILL.md` の手順で要件・ゴール・やらないことを詰め、**共有理解がユーザー確定するまで Phase 0 に進まない**。確定後、結論を要件として Phase 0 に進む（`--manual` / `--multi` が併記されていればそのモードで継続）。実装ズレ防止とゴール確認が目的。
 1. **`--manual` が含まれる場合**（かつ `--grill` なし、または軍議確定後） → 順次モード（Phase 0 のみ実行し案内して終了）
 2. **`--multi` が含まれる場合**（同上） → マルチタスクモード（[docs/multi-task.md](docs/multi-task.md) の手順で実行）
 3. **`--grill` / `--manual` / `--multi` いずれも含まれない場合** → AskUserQuestion でモード選択を提示:
 
 ※ 要件テキストに独立した複数の要求が含まれると判断した場合は、選択肢にマルチタスクモードを加えて提示すること。
-※ 要件が曖昧、ゴール未確認、または過去に実装ズレが起きやすい題材と判断したら、選択肢に軍議（Grill）を加え、推奨にする。
+※ `grill_mode: on` かつ、要件が曖昧・ゴール未確認・ズレやすい題材と判断したら、選択肢に軍議（Grill）を加え推奨にする。`grill_mode: off` なら軍議選択肢は出さない。
 
 ```
 さて、今回の戦をいかなる陣立てで進めるか、お聞かせ願いたい。

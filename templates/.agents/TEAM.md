@@ -9,7 +9,7 @@
 | コマンド | 役割 | 説明 |
 |---------|------|------|
 | `/koumei-start {要件}` | 諸葛孔明 | タスク定義・全担当への指示書作成（`--grill` で軍議後に開始可） |
-| `/koumei-grill {要件}` | 諸葛孔明 | 軍議（Grill）: 要件・ゴール・やらないことの共有確認（実装ズレ防止） |
+| `/koumei-grill {要件}` | 諸葛孔明 | 軍議（Grill）: 要件・ゴール・やらないことの共有確認（`TEAM.md` の `grill_mode` で on/off） |
 | `/koumei-analyze [タスクID]` | analyst | 既存コードベースの分析 |
 | `/koumei-design [タスクID]` | **ux-designer + tech-lead** | UX設計と技術設計を**並列実行** |
 | `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー |
@@ -161,6 +161,22 @@ review_timeout: 600
 - `claude-only` — 常に Claude（devils-advocate のモデル列。既定: fable）を使用
 - `review_timeout` — codex / lmstudio レビューの制限時間（秒）。超過したら中断し、次の優先モデルにフォールバックする
 - 一時的な切り替えは `/koumei-review --model claude` のように `--model` フラグで指定できる（TEAM.md の編集不要）
+
+
+### 軍議（Grill）設定
+
+実装前の要件・ゴール確認（`/koumei-grill` / `/koumei-start --grill`）の既定動作。
+
+```yaml
+grill_mode: on
+```
+
+| 値 | 動作 |
+|----|------|
+| `on` | `/koumei-start` で要件が曖昧なとき軍議を提案する。`--grill` 有効（既定） |
+| `off` | `/koumei-start` は軍議を提案しない。`--grill` も無視する。明示の `/koumei-grill` だけは実行可 |
+
+`grill_mode` を書き換えるだけで切り替えられる。オフにしたいプロジェクトは `off` にする。
 
 ### セカンドオピニオン設定（オプション）
 
