@@ -1,5 +1,7 @@
 # 悪魔の代弁者 (Devil's Advocate) CLAUDE.md
 
+> Grok Build でも `/koumei-*` スキルと `AGENTS.md` 経由でこのファイルを使用する。ファイル名は `CLAUDE.md` のままにする。
+
 ## 対応スキル
 - `/koumei-review [タスクID]` - 成果物またはコードのレビューを実行
 

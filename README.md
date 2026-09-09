@@ -1,6 +1,8 @@
-# Koumei - Claude Code マルチエージェント開発テンプレート
+# Koumei - Claude Code / Grok Build マルチエージェント開発テンプレート
 
-Claude Codeのマルチエージェント開発体制を、任意のプロジェクトに展開するためのテンプレート集。
+Claude Code と Grok Build（xAI `grok` CLI）の両方で動くマルチエージェント開発体制を、任意のプロジェクトに展開するためのテンプレート集。
+
+両方の CLI が `.claude/skills/` と `CLAUDE.md` / `AGENTS.md` を読み込む。セットアップはスキルを `.grok/skills/` にもミラーし、Grok ネイティブ発見にも乗せる。ロール定義のファイル名は **`CLAUDE.md` のまま**（リネームしない）。
 
 ## 概要
 
@@ -39,7 +41,32 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 | レビュアー | devils-advocate | 全成果物のレビュー・問題提起 | fable |
 | タスク並列実行（オプション） | task-manager | マルチタスク時に1タスクのPhase 1〜7をworktree内で完遂 | inherit |
 
-**モデル戦略**: 高単価・高知能モデル（fable）は「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に配置する。レビューVERDICTはフロー全体を制御する品質ゲートのため devils-advocate に、設計ミスは実装で増幅されるため tech-lead の設計フェーズに fable を使い、トークン量の多い実装は opus（または Codex 委譲）で実行する。モデルは `TEAM.md` のチーム構成テーブルの「モデル」列で一元管理され、オーケストレーターがサブエージェント起動時に `model` パラメータとして渡す。なお `/koumei-review` は既定で codex を優先するため（「レビューモデル選択」参照）、fable が使われるのは Claude でレビューを実行する経路。
+**モデル戦略（Claude Code）**: 高単価・高知能モデル（fable）は「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に配置する。レビューVERDICTはフロー全体を制御する品質ゲートのため devils-advocate に、設計ミスは実装で増幅されるため tech-lead の設計フェーズに fable を使い、トークン量の多い実装は opus（または Codex 委譲）で実行する。モデルは `TEAM.md` のチーム構成テーブルの「モデル」列で一元管理され、オーケストレーターがサブエージェント起動時に `model` パラメータとして渡す。なお `/koumei-review` は既定で codex を優先するため（「レビューモデル選択」参照）、fable が使われるのは Claude でレビューを実行する経路。
+
+**Grok Build でのモデル**: 上表の `sonnet` / `opus` / `fable` は Claude Code 用。Grok セッションでは親のモデル（既定 `grok-build`）を継承する。Claude モデル ID を Grok の `model` に渡さない。詳細は `.agents/TEAM.md` の **Grok Build defaults**。
+
+## Claude Code と Grok Build
+
+| | Claude Code | Grok Build (`grok`) |
+|--|-------------|---------------------|
+| プロジェクト指示 | `CLAUDE.md` / `.claude/CLAUDE.md` | `AGENTS.md` / `CLAUDE.md`（両方読む） |
+| スキル | `.claude/skills/` | `.claude/skills/` **および** `.grok/skills/`（setup がミラー） |
+| スラッシュ | `/koumei-start` など | 同じ `/koumei-start`、または `/skills koumei-start` |
+| ロール定義 | `.agents/*/CLAUDE.md` | 同じファイル（リネームしない） |
+| サブエージェント | Agent / Task tool（`model:` にチーム表の Claude 名） | 親セッションから Grok subagent（`general-purpose`）。ネスト不可のため、入れ子は Bash `grok --prompt-file` / `grok -p` |
+| Hooks | `.claude/settings.json` が `hooks/` を実行 | 権限は settings.json をフォールバック。ネイティブ hooks は `.grok/hooks/` / `config.toml`。実行前に `/hooks-trust` |
+| ヘッドレス | Claude Code の相当機能 | `grok -p "..."` / `grok --prompt-file path --always-approve` |
+
+### Grok での起動例
+
+```bash
+cd /path/to/your/project
+grok                          # TUI。/koumei-start または /skills
+grok -p "/koumei-status"
+grok --prompt-file /tmp/role.md --always-approve
+```
+
+`--multi`（task-manager がさらにサブエージェントを起動）は Claude Code v2.1.172 以降向け。Grok の subagent は **1段まで**なので、並列タスクは親が直接 spawn するか、入れ子 CLI（`grok --prompt-file`）を使う。
 
 ## Skills（スラッシュコマンド）
 
@@ -113,16 +140,24 @@ Claude Codeのマルチエージェント開発体制を、任意のプロジェ
 
 ```bash
 bash scripts/setup.sh /path/to/your/project
+
+# 非対話（TTY なし / CI / 既存 .agents をマージ）
+bash scripts/setup.sh -y /path/to/your/project
+KOUMEI_FORCE=1 bash scripts/setup.sh /path/to/your/project
 ```
 
-`.agents` / `.claude/skills` のコピーに加え、hooks/ のコピーと `.claude/settings.json` のマージ（既存設定があれば hooks のみ追加）まで自動で行う。
+`.agents` と `.claude/skills` のコピーに加え、スキルの `.grok/skills/` ミラー、`hooks/` のコピー、`.claude/settings.json` のマージ（既存設定があれば hooks のみ追加）、`AGENTS.md`（未作成時）、`.grok/HOOKS.md` まで自動で行う。
 
 ### 方法2: 手動コピー
 
 ```bash
 cp -r templates/.agents /path/to/your/project/
 cp -r templates/.claude /path/to/your/project/
+mkdir -p /path/to/your/project/.grok/skills
+cp -r templates/.claude/skills/. /path/to/your/project/.grok/skills/
 cp -r templates/hooks /path/to/your/project/   # Hooks を使う場合
+cp templates/AGENTS.md /path/to/your/project/
+cp templates/.grok/HOOKS.md /path/to/your/project/.grok/HOOKS.md
 ```
 
 ### カスタマイズ
@@ -160,7 +195,7 @@ cp -r templates/hooks /path/to/your/project/   # Hooks を使う場合
 - 孔明が要件を「1タスク=1ブランチ=1PR」の単位に分割し、依存・ファイル競合を判定して並列/直列の実行計画を立てる（実行前にユーザー承認）
 - 各 task-manager は git worktree 内で分析〜PR作成までを完遂する（レビュー独立の厳格ルールも通常フローと同一）
 - task-manager はユーザーに質問できないため、3回差し戻し等の判断事項は HALTED として孔明に返り、孔明がまとめてユーザーに諮る
-- 前提: Claude Code v2.1.172 以降（サブエージェントのネスト起動）
+- 前提: Claude Code v2.1.172 以降（サブエージェントのネスト起動）。Grok Build は subagent をネストできないため、`--multi` は Claude Code 向け。Grok では親が直接 spawn するか `grok --prompt-file` で入れ子 CLI にする
 
 単一タスクや逐次実行なら task-manager は不要で、孔明が直接統括する（デフォルト動作）。
 
@@ -193,10 +228,12 @@ cp -r templates/hooks /path/to/your/project/   # Hooks を使う場合
 - **analyst** — コード分析はCodexの得意領域。読み取り中心で品質リスク低
 - **tech-lead（実装）** — コーディング能力が高い。opus→Codexで大幅節約
 
-**Claude維持推奨:**
+**Claude維持推奨（Claude Code セッション）:**
 - **koumei** — オーケストレーター（Claude Agent API必須）
 - **ux-designer** — 創造的UX判断が多い
 - **devils-advocate** — 品質ゲートは信頼性重視
+
+Grok Build セッションでは委譲テーブルは任意。親が Grok subagent を spawn するか、`grok -p` / `grok --prompt-file` でロールを実行する。
 
 委譲先で実装したコードも、次の `/koumei-review` の独立レビューを必ず通るため品質は担保される（レビュー実行モデルは「レビューモデル選択」に従う）。
 
@@ -234,6 +271,8 @@ Devil's Advocateレビュー時に、Claude以外のモデル（Codex, Gemini等
 
 `templates/hooks/` と `templates/.claude/settings.json` に、展開先プロジェクト用の Hooks 一式を用意。`setup.sh` が hooks/ のコピーと settings.json のマージ（要 jq）まで自動で行う。
 
+Grok Build ではこの JSON hooks は自動実行されない。`.grok/HOOKS.md` を参照し、使う場合は `/hooks-trust`（必要なら `/hooks-add hooks/`）。
+
 | フック | タイミング | 内容 |
 |--------|-----------|------|
 | `quality-gate.sh` | PreToolUse (Write/Edit) | `TEAM.md` 等の重要ファイルの直接編集をブロック |
@@ -245,9 +284,10 @@ Devil's Advocateレビュー時に、Claude以外のモデル（Codex, Gemini等
 
 ```
 your-project/
+├── AGENTS.md                           # Grok / 他オーケストレーター向け入口（.agents/TEAM.md を指す）
 ├── .claude/
-│   ├── settings.json                   # Hooks 設定（setup.sh がマージ）
-│   └── skills/                         # スキル定義
+│   ├── settings.json                   # Claude Code Hooks 設定（setup.sh がマージ）
+│   └── skills/                         # スキル定義（Claude Code + Grok 互換発見）
 │       ├── koumei-start/
 │       │   ├── SKILL.md
 │       │   └── docs/                   # phases / rules / error-handling /
@@ -262,6 +302,9 @@ your-project/
 │       │                               #  オピニオン）/ review-models（モデル選択）
 │       ├── koumei-implement/SKILL.md
 │       └── koumei-status/SKILL.md
+├── .grok/
+│   ├── skills/                         # .claude/skills のミラー（Grok ネイティブ発見）
+│   └── HOOKS.md                        # /hooks-trust vs Claude settings.json
 ├── .agents/
 │   ├── TEAM.md                         # チーム構成・規約
 │   ├── koumei/
@@ -290,7 +333,7 @@ your-project/
 │       ├── api-designer/CLAUDE.md
 │       ├── data-engineer/CLAUDE.md
 │       └── infra-architect/CLAUDE.md
-├── hooks/                              # Claude Code Hooks
+├── hooks/                              # 共有 hook スクリプト（Claude は settings.json、Grok は /hooks-trust）
 │   ├── quality-gate.sh                 # 重要ファイルの直接編集ブロック
 │   ├── log-operation.sh                # 全操作のログ記録
 │   ├── auto-format.sh                  # 保存時の自動フォーマット

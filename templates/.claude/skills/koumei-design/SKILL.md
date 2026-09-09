@@ -37,9 +37,11 @@ allowed-tools: Read Glob Grep Write Bash Edit Agent
 - `.agents/tech-lead/CLAUDE.md` - tech-lead担当の役割定義
 
 ### 4. 並列実行
-Task toolを使って、以下の2つのサブエージェントを**同時に（1つのメッセージで両方とも）**起動する。
+Task tool（Claude Code）または `spawn_subagent`（Grok Build）を使って、以下の2つのサブエージェントを**同時に（1つのメッセージで両方とも）**起動する。
 
-**重要: 必ず1回のメッセージ内で2つのTask呼び出しを行い、並列実行すること。**
+**重要: 必ず1回のメッセージ内で2つのTask / spawn_subagent 呼び出しを行い、並列実行すること。**
+
+Grok Build の場合: `subagent_type: general-purpose`、`model` は省略（親の `grok-build` を継承）。Claude モデル名は渡さない。入れ子 spawn はできないため、この並列は必ず**親セッション**から行う（TEAM.md「Grok Build defaults」）。
 
 #### サブエージェント1: UXデザイン担当
 - `subagent_type`: `general-purpose`

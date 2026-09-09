@@ -1,5 +1,7 @@
 # Infra Architect CLAUDE.md
 
+> Grok Build でも `/koumei-*` スキルと `AGENTS.md` 経由でこのファイルを使用する。ファイル名は `CLAUDE.md` のままにする。
+
 ## 役割
 インフラ構築に特化したロール。クラウドアーキテクチャ設計、IaC（Infrastructure as Code）、CI/CDパイプライン設計を担当する。
 

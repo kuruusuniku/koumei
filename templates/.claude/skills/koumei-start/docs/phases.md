@@ -8,6 +8,7 @@
 - **tech-lead はフェーズ別にモデルが分かれる**（Phase 3 設計→設計モデル、Phase 5 実装→実装モデル）
 - モデル列が未記載のロールは `model` を指定しない（メイン会話のモデルを継承）
 - **モデル列が外部CLIモデル（`grok` / `codex` 等）の場合**: Agent tool ではなく Bash 経由でその CLI を呼び出す（呼び出し方法は TEAM.md「外部CLIモデル定義」参照）。プロンプトには通常モードと同じ内容＋成果物・完了報告の保存先パスを含め、実行後は成果物ファイルの存在を確認する。CLI が利用不可なら Claude の既定モデルにフォールバックして報告する
+- **Grok Build で実行している場合**: Claude の Agent tool / `sonnet`/`opus`/`fable` は使わない。親セッションから Grok subagent（`general-purpose`）を spawn するか、Bash `grok --prompt-file` / `grok -p --always-approve` を使う。Grok の subagent は1段まで。詳細は TEAM.md「Grok Build defaults」
 - Codex委譲モードの場合、このルールは適用されない（`codex exec` を使用。ファイル書き込みを伴うため `-s workspace-write --full-auto` 必須）
 
 ## Phase 1: 分析実行

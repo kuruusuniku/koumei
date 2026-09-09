@@ -1,5 +1,7 @@
 # 諸葛孔明 - 最高指揮者 CLAUDE.md
 
+> Grok Build でも `/koumei-*` スキルと `AGENTS.md` 経由でこのファイルを使用する。ファイル名は `CLAUDE.md` のままにする。
+
 ## 対応スキル
 - `/koumei-start {要件}` - タスク定義・指示書作成
 - `/koumei-status` - 進捗確認・次のアクション提案

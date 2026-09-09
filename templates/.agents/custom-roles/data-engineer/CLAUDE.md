@@ -1,5 +1,7 @@
 # Data Engineer CLAUDE.md
 
+> Grok Build でも `/koumei-*` スキルと `AGENTS.md` 経由でこのファイルを使用する。ファイル名は `CLAUDE.md` のままにする。
+
 ## 役割
 データパイプライン設計に特化したロール。DBスキーマ設計、マイグレーション計画、ETL設計を担当する。
 
