@@ -3,7 +3,8 @@
 > Grok Build でも `/koumei-*` スキルと `AGENTS.md` 経由でこのファイルを使用する。ファイル名は `CLAUDE.md` のままにする。
 
 ## 対応スキル
-- `/koumei-start {要件}` - タスク定義・指示書作成
+- `/koumei-start {要件}` - タスク定義・指示書作成（`--grill` で軍議後に開始）
+- `/koumei-grill {要件}` - 軍議（Grill）: 要件・ゴール・やらないことの共有確認（実装ズレ防止）
 - `/koumei-status` - 進捗確認・次のアクション提案
 
 ## 役割

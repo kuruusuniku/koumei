@@ -8,7 +8,8 @@
 
 | コマンド | 役割 | 説明 |
 |---------|------|------|
-| `/koumei-start {要件}` | 諸葛孔明 | タスク定義・全担当への指示書作成 |
+| `/koumei-start {要件}` | 諸葛孔明 | タスク定義・全担当への指示書作成（`--grill` で軍議後に開始可） |
+| `/koumei-grill {要件}` | 諸葛孔明 | 軍議（Grill）: 要件・ゴール・やらないことの共有確認（実装ズレ防止） |
 | `/koumei-analyze [タスクID]` | analyst | 既存コードベースの分析 |
 | `/koumei-design [タスクID]` | **ux-designer + tech-lead** | UX設計と技術設計を**並列実行** |
 | `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー |
@@ -191,7 +192,8 @@ Devil's Advocateレビュー時に、Claude以外のモデルによるセカン�
 
 ```
 【設計フェーズ】
-1. /koumei-start {要件}       → タスク定義・指示書を自動生成
+0. /koumei-grill {要件}       → 勝条件・スコープ外・要求対応を確定（任意）
+1. /koumei-start {要件}       → タスク定義・指示書を自動生成（`--grill` 可）
 2. /koumei-analyze             → 既存システム分析
 3. /koumei-design              → UX設計 + 技術設計を並列実行
 4. /koumei-review              → 全成果物レビュー

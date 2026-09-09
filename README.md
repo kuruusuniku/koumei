@@ -74,12 +74,21 @@ grok --prompt-file /tmp/role.md --always-approve
 
 | コマンド | 担当 | 用途 |
 |---------|------|------|
-| `/koumei-start {要件}` | koumei | タスク定義＋各担当への指示書を一括作成（全自動/`--manual` 順次/`--multi` マルチタスク） |
+| `/koumei-start {要件}` | koumei | タスク定義＋各担当への指示書を一括作成（全自動/`--manual` 順次/`--multi` マルチタスク/`--grill` 軍議後） |
+| `/koumei-grill {要件}` | koumei | **軍議（Grill）**: 要件・ゴール・やらないことをラウンド尋問で固め、実装ズレを防ぐ（[grill-me](https://www.skills.sh/mattpocock/skills/grill-me) 由来） |
 | `/koumei-analyze [タスクID]` | analyst | 既存コード・スキーマの分析 |
 | `/koumei-design [タスクID]` | ux-designer + tech-lead | UX設計と技術設計を**並列実行** |
 | `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー（`--security` / `--second-opinion` / `--model` で拡張） |
 | `/koumei-implement [フェーズ番号]` | tech-lead | レビュー通過後、実装を開始 |
 | `/koumei-status` | koumei | タスク進捗の確認・次アクション提案 |
+
+### 軍議（Grill）モード — 実装ズレ防止
+
+実装が要求とズレやすいとき、またはゴールを先に揃えたいときは **`/koumei-grill`**（または `/koumei-start {要件} --grill`）を使う。
+
+[mattpocock/skills の grill-me / grilling](https://www.skills.sh/mattpocock/skills/grill-me) と同じく、設計木を **ラウンド** で歩き、各問に推奨答を付けてユーザーに決めてもらう。事実はコード／issue を自分で調べ、**共有理解が確定するまで実装・Phase 1+ に進まない**。
+
+確定後は `.agents/koumei/tasks/grill-*.md` に結論（ゴール・やらないこと・要件対応表・検証方法）を残し、必要ならそのまま `/koumei-start` に渡す。
 
 ### 個別実行（差し戻し時）
 
@@ -91,7 +100,8 @@ grok --prompt-file /tmp/role.md --always-approve
 ### 典型的な流れ
 
 ```
-/koumei-start メモ帳機能     ← タスク定義＋指示書作成
+/koumei-grill メモ帳機能     ← 要件・ゴール確認（ズレ防止）※任意だが推奨
+/koumei-start メモ帳機能     ← タスク定義＋指示書作成（または /koumei-start … --grill）
 /koumei-analyze              ← 既存コード分析
 /koumei-design               ← UX設計 + 技術設計（並列実行）
 /koumei-review               ← レビュー実行
@@ -106,7 +116,8 @@ grok --prompt-file /tmp/role.md --always-approve
 
 ```
 【設計フェーズ】
-1. /koumei-start {要件}       → タスク定義・指示書を自動生成
+0. /koumei-grill {要件}       → 勝条件・やらないこと・要求対応を確定（任意・ズレ防止）
+1. /koumei-start {要件}       → タスク定義・指示書を自動生成（`--grill` で 0 を内包可）
 2. /koumei-analyze             → 既存システム分析
 3. /koumei-design              → UX設計 + 技術設計を並列実行
 4. /koumei-review              → 全成果物レビュー
