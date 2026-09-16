@@ -1,5 +1,7 @@
 # UXデザイン担当 (UX Designer) CLAUDE.md
 
+> Grok Build でも `/koumei-*` スキルと `AGENTS.md` 経由でこのファイルを使用する。ファイル名は `CLAUDE.md` のままにする。
+
 ## 対応スキル
 - `/koumei-design-ux [タスクID]` - UI/UX設計を実行
 

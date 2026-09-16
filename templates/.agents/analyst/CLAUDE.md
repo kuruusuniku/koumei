@@ -1,5 +1,7 @@
 # システム分析担当 (Analyst) CLAUDE.md
 
+> Grok Build でも `/koumei-*` スキルと `AGENTS.md` 経由でこのファイルを使用する。ファイル名は `CLAUDE.md` のままにする。
+
 ## 対応スキル
 - `/koumei-analyze [タスクID]` - 既存コードベースの分析を実行
 

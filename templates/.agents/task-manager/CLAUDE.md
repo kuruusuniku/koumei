@@ -1,5 +1,7 @@
 # タスクマネージャー (Task Manager / 部将) CLAUDE.md
 
+> Grok Build でも `/koumei-*` スキルと `AGENTS.md` 経由でこのファイルを使用する。ファイル名は `CLAUDE.md` のままにする。
+
 ## 役割
 マルチタスクモード（`/koumei-start --multi`）専用の実行単位。
 諸葛孔明から一つの戦（タスク）を預かり、git worktree 内で Phase 1〜7 のパイプラインを完遂する使い捨ての部将。

@@ -8,7 +8,8 @@
 
 | コマンド | 役割 | 説明 |
 |---------|------|------|
-| `/koumei-start {要件}` | 諸葛孔明 | タスク定義・全担当への指示書作成 |
+| `/koumei-start {要件}` | 諸葛孔明 | タスク定義・全担当への指示書作成（`--grill` で軍議後に開始可） |
+| `/koumei-grill {要件}` | 諸葛孔明 | 軍議（Grill）: 要件・ゴール・やらないことの共有確認（`TEAM.md` の `grill_mode` で on/off） |
 | `/koumei-analyze [タスクID]` | analyst | 既存コードベースの分析 |
 | `/koumei-design [タスクID]` | **ux-designer + tech-lead** | UX設計と技術設計を**並列実行** |
 | `/koumei-review [タスクID]` | devils-advocate | 全成果物のレビュー |
@@ -38,6 +39,7 @@
 
 - 指定可能な値: `haiku` / `sonnet` / `opus` / `fable`（またはフルモデルID）、および下記「外部CLIモデル定義」に登録した外部モデル名（`grok` / `codex` 等）
 - **外部CLIモデルを指定した場合**: オーケストレーターは Agent tool ではなく Bash 経由でその CLI を呼び出す。CLI が利用不可（`command -v` で不在）の場合は Claude の既定モデルにフォールバックし、その旨を報告する
+- **Grok Build セッション**: 上表の Claude モデル名はそのまま残す（Claude Code 用）。Grok 側の既定は下記 **Grok Build defaults**
 - **配置の原則**: 高単価モデルは「トークン量が多い場所」ではなく「判断のレバレッジが高く出力が小さい場所」に置く
   - **devils-advocate = fable**: レビューVERDICTがフロー全体（差し戻しループ）を制御する品質ゲートであり、誤判定のコストが最も高い
   - **tech-lead 設計 = fable / 実装 = opus**: 設計ミスは実装で増幅される。実装はトークン量が多いため opus（または Codex 委譲）
@@ -51,12 +53,35 @@
 |---------|------------|------|
 | codex | `codex exec "{プロンプト}"` | OpenAI Codex CLI。モデルは `~/.codex/config.toml` の `model` に従う |
 | gpt-5.6-sol | `codex exec -m gpt-5.6-sol "{プロンプト}"` | codex CLI 経由でモデルを固定する例。`-m {モデルID}` で任意のモデルを登録できる |
-| grok | `grok -p "{プロンプト}"` | xAI Grok CLI（grok-4.5 等）。インストール済みの場合のみ |
+| grok | `grok -p "{プロンプト}" --always-approve` または `grok --prompt-file {path} --always-approve` | xAI Grok Build CLI（既定モデル `grok-build`）。インストール済みの場合のみ |
 | gemini | `gemini "{プロンプト}"` | Google Gemini CLI |
 
 **サンドボックスの注意**: codex CLI の既定サンドボックスは読み取り専用。**ファイル書き込みを伴う委譲（分析成果物の保存・実装）では `-s workspace-write --full-auto` を追加する**こと（例: `codex exec -s workspace-write --full-auto "{プロンプト}"`）。レビュー・セカンドオピニオンのように標準出力を呼び出し元が受け取って保存する用途では不要。
 
 利用可否は CLI 本体の存在（例: `command -v codex`）で確認し、不可の場合は Claude にフォールバックして報告する。
+
+### Grok Build defaults
+
+Claude Code では上表のモデル列（sonnet / opus / fable）を Agent tool の `model` に渡す。**Grok Build（`grok` CLI）で同じワークフローを回すときは、Claude モデル ID を渡さない。**
+
+| 役割 | Grok での既定 |
+|------|----------------|
+| koumei（オーケストレーター） | 現在のセッションモデル（既定 `grok-build`） |
+| analyst / ux-designer / tech-lead / devils-advocate / task-manager | 親セッションのモデルを継承（ピンしなければ `grok-build`） |
+
+**Grok での担当起動（優先順）:**
+
+1. **Grok subagent（推奨・親セッションから）** — `spawn_subagent` / Task、`subagent_type: general-purpose`。プロンプトに該当ロールの `.agents/{role}/CLAUDE.md` と指示書を含める。`model` は省略（親を継承）。並列は **1つのターンで複数 spawn**（`/koumei-design` と同じ）。
+2. **入れ子 CLI** — Grok の subagent は **1段まで**（子はさらに spawn できない）。task-manager 相当や長いロールプロンプトは Bash で:
+   ```bash
+   grok --prompt-file /tmp/koumei-role.md --always-approve --cwd "{{PROJECT_PATH}}"
+   grok -p "あなたは analyst。`.agents/analyst/CLAUDE.md` に従い task-00N を分析せよ" --always-approve
+   ```
+3. **インライン定義** — `grok --agents '{...}'` またはプロジェクトの `.grok/agents/`。ロール本文は `.agents/*/CLAUDE.md` を参照させる（ファイル名は変えない）。
+
+**スキル:** Grok は `.claude/skills/` と `.grok/skills/`（setup がミラー）の両方を発見する。TUI では `/koumei-start` または `/skills koumei-start`。
+
+**Hooks:** Claude Code は `.claude/settings.json` が `hooks/` を実行する。Grok のネイティブ hooks は `.grok/hooks/` / `config.toml` で、実行前に `/hooks-trust` が必要。詳細は `.grok/HOOKS.md`。
 
 ### カスタムロール（オプション）
 
@@ -137,6 +162,22 @@ review_timeout: 600
 - `review_timeout` — codex / lmstudio レビューの制限時間（秒）。超過したら中断し、次の優先モデルにフォールバックする
 - 一時的な切り替えは `/koumei-review --model claude` のように `--model` フラグで指定できる（TEAM.md の編集不要）
 
+
+### 軍議（Grill）設定
+
+実装前の要件・ゴール確認（`/koumei-grill` / `/koumei-start --grill`）の既定動作。
+
+```yaml
+grill_mode: on
+```
+
+| 値 | 動作 |
+|----|------|
+| `on` | `/koumei-start` で要件が曖昧なとき軍議を提案する。`--grill` 有効（既定） |
+| `off` | `/koumei-start` は軍議を提案しない。`--grill` も無視する。明示の `/koumei-grill` だけは実行可 |
+
+`grill_mode` を書き換えるだけで切り替えられる。オフにしたいプロジェクトは `off` にする。
+
 ### セカンドオピニオン設定（オプション）
 
 Devil's Advocateレビュー時に、Claude以外のモデルによるセカンドオピニオンを取得できます。
@@ -160,14 +201,15 @@ Devil's Advocateレビュー時に、Claude以外のモデルによるセカン�
 - 諸葛孔明が要件を複数タスクに分割し、タスクごとに **task-manager（部将）** サブエージェントを起動
 - 各 task-manager は git worktree 内で Phase 1〜7 のパイプラインを完遂し、PR作成まで行う
 - 依存関係・ファイル競合のあるタスクは直列実行される
-- **前提**: Claude Code v2.1.172 以降（サブエージェントのネスト起動）、`.agents/`・`.claude/` がリポジトリにコミットされていること
+- **前提**: Claude Code v2.1.172 以降（サブエージェントのネスト起動）、`.agents/`・`.claude/` がリポジトリにコミットされていること。Grok Build は subagent をネストできないため、`--multi` は Claude Code 向け。Grok では親が各タスクを直接 spawn するか、`grok --prompt-file` で入れ子 CLI にする
 - 詳細手順: `.claude/skills/koumei-start/docs/multi-task.md` / 役割定義: `.agents/task-manager/CLAUDE.md`
 
 ### ワークフロー（スキル駆動）
 
 ```
 【設計フェーズ】
-1. /koumei-start {要件}       → タスク定義・指示書を自動生成
+0. /koumei-grill {要件}       → 勝条件・スコープ外・要求対応を確定（任意）
+1. /koumei-start {要件}       → タスク定義・指示書を自動生成（`--grill` 可）
 2. /koumei-analyze             → 既存システム分析
 3. /koumei-design              → UX設計 + 技術設計を並列実行
 4. /koumei-review              → 全成果物レビュー

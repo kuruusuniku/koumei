@@ -1,7 +1,7 @@
 ---
 name: koumei-start
 description: 諸葛孔明として新しいタスクを開始する。全自動/順次/マルチタスクモードを選択し、要件定義からPR作成までを統括する。
-argument-hint: "{要件テキスト} [--manual] [--multi]"
+argument-hint: "{要件テキスト} [--manual] [--multi] [--grill]"
 disable-model-invocation: true
 allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 ---
@@ -28,6 +28,7 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 - **レビュー（devils-advocate）は必ず独立した別エージェントで実行すること**（統合禁止）
 - タスク種別（軽微修正/バグ修正小/中/機能追加）でフェーズスキップあり。ただし **Phase 6（コードレビュー）はいかなる種別でもスキップ禁止**
 - サブエージェント起動時は TEAM.md のモデル列を `model` パラメータに指定する（[docs/phases.md](docs/phases.md) 冒頭参照）
+- Grok Build で実行している場合は TEAM.md「Grok Build defaults」に従う（Claude モデル名は渡さない。spawn は親から。入れ子は `grok --prompt-file` / `grok -p`）
 
 ---
 
@@ -35,19 +36,24 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 
 `$ARGUMENTS` を確認し、実行モードを決定する:
 
-1. **`--manual` が含まれる場合** → 順次モード（Phase 0 のみ実行し案内して終了）
-2. **`--multi` が含まれる場合** → マルチタスクモード（[docs/multi-task.md](docs/multi-task.md) の手順で実行）
-3. **どちらも含まれない場合** → AskUserQuestion でモード選択を提示:
+0. **先に `.agents/TEAM.md` の `grill_mode` を確認**する（無記載は `on`）。
+   - **`grill_mode: off`** のとき: 軍議は行わない。`--grill` が付いていても**無視**し、その旨を一言報告して通常モードへ。モード選択でも軍議選択肢を出さない。明示的に軍議したい場合はユーザーに `grill_mode: on` にするか `/koumei-grill` 単体を案内する。
+   - **`grill_mode: on`** かつ **`--grill` が含まれる場合** → 先に軍議（Grill）モード。`.claude/skills/koumei-grill/SKILL.md` の手順で要件・ゴール・やらないことを詰め、**共有理解がユーザー確定するまで Phase 0 に進まない**。確定後、結論を要件として Phase 0 に進む（`--manual` / `--multi` が併記されていればそのモードで継続）。実装ズレ防止とゴール確認が目的。
+1. **`--manual` が含まれる場合**（かつ `--grill` なし、または軍議確定後） → 順次モード（Phase 0 のみ実行し案内して終了）
+2. **`--multi` が含まれる場合**（同上） → マルチタスクモード（[docs/multi-task.md](docs/multi-task.md) の手順で実行）
+3. **`--grill` / `--manual` / `--multi` いずれも含まれない場合** → AskUserQuestion でモード選択を提示:
 
 ※ 要件テキストに独立した複数の要求が含まれると判断した場合は、選択肢にマルチタスクモードを加えて提示すること。
+※ `grill_mode: on` かつ、要件が曖昧・ゴール未確認・ズレやすい題材と判断したら、選択肢に軍議（Grill）を加え推奨にする。`grill_mode: off` なら軍議選択肢は出さない。
 
 ```
 さて、今回の戦をいかなる陣立てで進めるか、お聞かせ願いたい。
 
-1. 全自動モード — 天の時を待たず一気に攻め入る（推奨）
+1. 全自動モード — 天の時を待たず一気に攻め入る
 2. 順次モード — 一手ずつ慎重に進める
+3. 軍議（Grill）→その後出陣 — 要件・勝条件・やらないことを詰めてから進む（ズレ防止・推奨しやすい）
 
-※ 何も選ばずお進みいただければ、全自動モードにて出陣いたす。
+※ 何も選ばずお進みいただければ、全自動モードにて出陣いたす。曖昧な要件なら軍議を勧める。
 ```
 
 ---
@@ -61,7 +67,7 @@ allowed-tools: Read Write Glob Grep Bash Edit Agent AskUserQuestion
 `.agents/koumei/tasks/` を確認し、次のタスク番号を決定する。
 
 ### 手順 3. 引数の処理・タスク種別判定
-- `$ARGUMENTS`（`--manual` を除いた部分）が指定されている場合、それをタスクの概要として使用する
+- `$ARGUMENTS`（`--manual` / `--multi` / `--grill` を除いた部分）が指定されている場合、それをタスクの概要として使用する。`--grill` 経由の場合は軍議結論（ゴール・やらないこと・受け入れ条件）を概要とタスク定義に必ず反映する
 - 指定がない場合、AskUserQuestion でユーザーにタスクの概要を確認する
 - タスク種別を判定し、タスク定義ファイルに記録する（判定基準は [docs/rules.md](docs/rules.md) 参照）
 

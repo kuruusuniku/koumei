@@ -7,6 +7,7 @@
 - Claude Code v2.1.172 以降（サブエージェントがサブエージェントを起動できること）
 - リポジトリで git worktree が使用可能なこと
 - `.agents/` と `.claude/` がリポジトリにコミットされていること（worktree 内で参照するため）
+- Grok Build は subagent をネストできない。Grok で `--multi` 相当を行う場合は、親が各タスクを直接実行するか、Bash `grok --prompt-file` / `grok -p --always-approve` で task-manager 相当の入れ子 CLI を起動する
 
 前提を満たさない場合はその旨を報告し、通常の全自動モードで直列実行するかユーザーに確認する。
 

@@ -1,5 +1,7 @@
 # 技術アーキテクチャ&実装担当 (Tech Lead) CLAUDE.md
 
+> Grok Build でも `/koumei-*` スキルと `AGENTS.md` 経由でこのファイルを使用する。ファイル名は `CLAUDE.md` のままにする。
+
 ## 対応スキル
 - `/koumei-design-tech [タスクID]` - 技術設計を実行
 - `/koumei-implement [フェーズ番号]` - 実装を実行（設計レビュー通過後）
